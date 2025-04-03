@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 public class BlockPlaced extends AbstractGameEvent {
-    public BlockPlaced(ResourceKey<Level> dimension, Vec3i pos) {
-        super(dimension, pos);
+    public BlockPlaced(String playerId, Vec3i pos) {
+        super(playerId, pos);
     }
 }
