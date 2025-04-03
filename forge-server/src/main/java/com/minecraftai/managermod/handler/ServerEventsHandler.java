@@ -1,9 +1,11 @@
 package com.minecraftai.managermod.handler;
 
 import com.minecraftai.managermod.actions.AbstractAction;
+import com.minecraftai.managermod.constants.Prompts;
 import com.minecraftai.managermod.di.ServerHolder;
 import com.minecraftai.managermod.events.AbstractGameEvent;
 import com.minecraftai.managermod.events.ChatMessagePosted;
+import com.minecraftai.managermod.integration.OpenAIClient;
 import com.minecraftai.managermod.service.ActionsProcessor;
 import com.minecraftai.managermod.service.EventTracker;
 import com.minecraftai.managermod.service.EventsActionResponder;
@@ -26,17 +28,30 @@ public class ServerEventsHandler {
     private final EventsActionResponder eventsActionResponder;
     private final EventTracker eventTracker;
     private final ServerHolder serverHolder;
+    private final OpenAIClient openAIClient;
 
     @Inject
-    public ServerEventsHandler(ServerHolder serverHolder, ActionsProcessor actionsProcessor, EventsActionResponder eventsActionResponder, EventTracker eventTracker) {
+    public ServerEventsHandler(
+            ServerHolder serverHolder,
+            ActionsProcessor actionsProcessor,
+            EventsActionResponder eventsActionResponder,
+            EventTracker eventTracker,
+            OpenAIClient openAIClient
+    ) {
         this.serverHolder = serverHolder;
         this.actionsProcessor = actionsProcessor;
         this.eventsActionResponder = eventsActionResponder;
         this.eventTracker = eventTracker;
+        this.openAIClient = openAIClient;
     }
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
+        openAIClient.setupInstructions(List.of(
+                Prompts.DESCRIBE_AI_ROLE,
+                Prompts.DESCRIBE_ACTIONS
+        ));
+
         serverHolder.setServer(event.getServer());
 
         releaseEventsThread.submit(() ->
@@ -64,11 +79,11 @@ public class ServerEventsHandler {
         var player = event.getPlayer();
 
         eventTracker.track(new ChatMessagePosted(
-                player.getStringUUID(),
-                event.getRawText(),
-                player.level().dimension(),
-                player.getOnPos()
-            )
+                        player.getStringUUID(),
+                        event.getRawText(),
+                        player.level().dimension(),
+                        player.getOnPos()
+                )
         );
     }
 }
