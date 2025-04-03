@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 public class BlockDestroyed extends AbstractGameEvent {
-    public BlockDestroyed(ResourceKey<Level> dimension, Vec3i pos) {
-        super(dimension, pos);
+    public BlockDestroyed(String playerId, Vec3i pos) {
+        super(playerId, pos);
     }
 }
