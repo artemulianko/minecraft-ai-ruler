@@ -21,7 +21,7 @@ public class BlockEventsHandler {
         if (event.getLevel().isClientSide()) return;
 
         if (event.getEntity() != null) {
-            eventTracker.track(new BlockPlaced(event.getEntity().level().dimension(), event.getPos()));
+            eventTracker.track(new BlockPlaced(event.getEntity().getStringUUID(), event.getPos()));
         } else {
             // Handle cases where the block was not placed by a known entity
             System.out.printf("Added BlockEvent {%s} by {unknown entity}%n", event.getPos().toString());
@@ -33,6 +33,6 @@ public class BlockEventsHandler {
         // Ignore client events
         if (event.getLevel().isClientSide()) return;
 
-        eventTracker.track(new BlockDestroyed(event.getPlayer().level().dimension(), event.getPos()));
+        eventTracker.track(new BlockDestroyed(event.getPlayer().getStringUUID(), event.getPos()));
     }
 }
