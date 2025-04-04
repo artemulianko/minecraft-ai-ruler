@@ -1,6 +1,8 @@
 package com.minecraftai.airulermod.integration;
 
 import com.google.gson.Gson;
+import com.minecraftai.airulermod.actions.SendMessage;
+import com.minecraftai.airulermod.actions.SpawnBlock;
 import jakarta.inject.Singleton;
 
 import javax.inject.Inject;
@@ -39,7 +41,7 @@ public class MockAIClient implements AIClient {
         final var responseBody = Map.of(
                 "actions", List.of(
                         Map.of(
-                                "type", "SEND_MESSAGE",
+                                "type", SendMessage.class.getSimpleName(),
                                 "messageBody", "Response from mock AI."
                         )
                 )
@@ -52,7 +54,7 @@ public class MockAIClient implements AIClient {
         final var responseBody = Map.of(
                 "actions", List.of(
                         Map.of(
-                                "type", "PLACE_BLOCK",
+                                "type", SpawnBlock.class.getSimpleName(),
                                 "blockType", "MUD",
                                 "pos", Map.of("x", 10, "y", 10, "z", 10)
                         )
@@ -66,7 +68,7 @@ public class MockAIClient implements AIClient {
         final var responseBody = Map.of(
                 "actions", List.of(
                         Map.of(
-                                "type", "PLACE_BLOCK",
+                                "type", SpawnBlock.class.getSimpleName(),
                                 "blockType", "TNT",
                                 "pos", Map.of("x", 10, "y", 10, "z", 10)
                         )
@@ -80,7 +82,7 @@ public class MockAIClient implements AIClient {
         final var responseBody = Map.of(
                 "actions", List.of(
                         Map.of(
-                                "type", "SPAWN_CREATURE",
+                                "type", SpawnBlock.class.getSimpleName(),
                                 "creatureType", "COW",
                                 "pos", Map.of("x", 10, "y", 10, "z", 10)
                         )

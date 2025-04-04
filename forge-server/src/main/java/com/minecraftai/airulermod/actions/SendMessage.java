@@ -4,6 +4,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 
 public class SendMessage extends AbstractAction {
+    public static final String ACTION_TYPE = "SendMessage";
+
     private final String messageBody;
 
     public SendMessage(String messageBody) {

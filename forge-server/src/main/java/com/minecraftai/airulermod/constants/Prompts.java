@@ -23,9 +23,9 @@ public class Prompts {
     private static final String DESCRIBE_ACTIONS = """
        Whole actions response must be send in JSON with type AIResponse. I'll describe schema in TS style.
 
-       type PlaceBlockAction = {type: "PLACE_BLOCK", blockType: "MUD" | "WATER" | "LAVA" | "ANVIL",  pos: {x: number, y: number, z: number}};
-       type SpawnCreature = {type: "SPAWN_CREATURE", creatureType: "COW" | "CREEPER" | "CHICKEN" | "SPIDER", pos: {x: number, y: number, z: number}};
-       type SendMessage = {type: "SEND_MESSAGE", messageBody: string};
+       type PlaceBlockAction = {type: "SpawnBlock", blockType: "MUD" | "WATER" | "LAVA" | "ANVIL",  pos: {x: number, y: number, z: number}};
+       type SpawnCreature = {type: "SpawnCreature", creatureType: "COW" | "CREEPER" | "CHICKEN" | "SPIDER", pos: {x: number, y: number, z: number}};
+       type SendMessage = {type: "SendMessage", messageBody: string};
        type Action = PlaceBlockAction | SpawnCreature | SendMessage;
 
        type AIResponse = {actions: Action[]}
