@@ -7,8 +7,12 @@ import com.minecraftai.airulermod.actions.SpawnBlock;
 import com.minecraftai.airulermod.actions.SpawnCreature;
 import com.minecraftai.airulermod.di.ServerHolder;
 import com.minecraftai.airulermod.events.AbstractGameEvent;
-import com.minecraftai.airulermod.integration.OpenAIClient;
+import com.minecraftai.airulermod.integration.AIClient;
+import com.minecraftai.airulermod.integration.AIClientHolder;
+import com.minecraftai.airulermod.integration.AIImplementation;
+import com.minecraftai.airulermod.integration.AIType;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import net.minecraft.core.Position;
 import net.minecraft.core.Vec3i;
@@ -23,13 +27,17 @@ import java.util.stream.Collectors;
 @Singleton
 public class EventsActionResponder {
     private final ServerHolder serverHolder;
-    private final OpenAIClient openAIClient;
+    private final AIClient aiClient;
     private final Gson serializer;
 
     @Inject
-    public EventsActionResponder(ServerHolder serverHolder, OpenAIClient openAIClient, Gson serializer) {
+    public EventsActionResponder(
+            AIClientHolder aiClientHolder,
+            ServerHolder serverHolder,
+            Gson serializer
+    ) {
+        this.aiClient = aiClientHolder.getAiClient();
         this.serverHolder = serverHolder;
-        this.openAIClient = openAIClient;
         this.serializer = serializer;
     }
 
@@ -52,7 +60,7 @@ public class EventsActionResponder {
             ));
             System.out.println(serverBatchMessage);
 
-            final var aiResponse = openAIClient.chat(serverBatchMessage);
+            final var aiResponse = aiClient.chat(serverBatchMessage);
             System.out.println("AI RESPONSE: " + aiResponse);
 
             if (aiResponse == null) {
