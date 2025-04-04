@@ -9,6 +9,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SpawnBlock extends AbstractAction {
+    public static final String ACTION_TYPE = "SpawnBlock";
+
     private final String blockType;
     private final Vec3i pos;
 

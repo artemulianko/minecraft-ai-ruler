@@ -26,16 +26,19 @@ public class EventsActionResponder {
     private final ServerHolder serverHolder;
     private final AIClient aiClient;
     private final Gson serializer;
+    private final ActionsParser actionsParser;
 
     @Inject
     public EventsActionResponder(
             AIClientHolder aiClientHolder,
             ServerHolder serverHolder,
-            Gson serializer
+            Gson serializer,
+            ActionsParser actionsParser
     ) {
         this.aiClient = aiClientHolder.getAiClient();
         this.serverHolder = serverHolder;
         this.serializer = serializer;
+        this.actionsParser = actionsParser;
     }
 
     /**
@@ -73,20 +76,10 @@ public class EventsActionResponder {
             List<AbstractAction> actionList = new LinkedList<>();
             for (JsonElement action : actions) {
                 JsonObject actionJson = action.getAsJsonObject();
-                String actionType = actionJson.get("type").getAsString();
+                final var actionEntity = actionsParser.parse(actionJson);
 
-                try {
-                    AbstractAction actionEntity = switch (actionType) {
-                        case "SPAWN_CREATURE" -> serializer.fromJson(actionJson, SpawnCreature.class);
-                        case "PLACE_BLOCK" -> serializer.fromJson(actionJson, SpawnBlock.class);
-                        case "SEND_MESSAGE" -> serializer.fromJson(actionJson, SendMessage.class);
-
-                        default -> throw new IllegalArgumentException("Unknown action type: " + actionType);
-                    };
-
+                if (actionEntity != null) {
                     actionList.add(actionEntity);
-                } catch (IllegalArgumentException e) {
-                    System.err.println("Failed to deserialize action: " + actionJson);
                 }
             }
 

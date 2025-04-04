@@ -10,6 +10,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SpawnCreature extends AbstractAction {
+    public static final String ACTION_TYPE = "SpawnCreature";
+
     enum CreatureType {
         COW,
         CHICKEN,
