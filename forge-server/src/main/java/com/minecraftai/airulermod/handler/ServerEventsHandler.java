@@ -6,7 +6,7 @@ import com.minecraftai.airulermod.di.ServerHolder;
 import com.minecraftai.airulermod.events.AbstractGameEvent;
 import com.minecraftai.airulermod.events.ChatMessagePosted;
 import com.minecraftai.airulermod.integration.AIClient;
-import com.minecraftai.airulermod.integration.AIClientHolder;
+import com.minecraftai.airulermod.di.AIClientHolder;
 import com.minecraftai.airulermod.service.ActionsProcessor;
 import com.minecraftai.airulermod.service.EventTracker;
 import com.minecraftai.airulermod.service.EventsActionResponder;

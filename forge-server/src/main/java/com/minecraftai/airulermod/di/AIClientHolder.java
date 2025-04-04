@@ -1,5 +1,8 @@
-package com.minecraftai.airulermod.integration;
+package com.minecraftai.airulermod.di;
 
+import com.minecraftai.airulermod.integration.AIClient;
+import com.minecraftai.airulermod.integration.AIImplementation;
+import com.minecraftai.airulermod.integration.AIType;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
