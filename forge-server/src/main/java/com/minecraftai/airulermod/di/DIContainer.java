@@ -6,7 +6,7 @@ import dagger.Component;
 import jakarta.inject.Singleton;
 
 @Singleton
-@Component(modules = {AppModule.class})
+@Component(modules = {AppModule.class, AppModule.Bind.class})
 public interface DIContainer {
     BlockEventsHandler getBlockEventsHandler();
     ServerEventsHandler getServerEventsHandler();

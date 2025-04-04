@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.minecraftai.airulermod.config.EnvConfig;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import okhttp3.*;
 
 import javax.annotation.Nullable;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+@Singleton
 public class OpenAIClient implements AIClient {
     private static final Logger logger = LoggerFactory.getLogger(OpenAIClient.class);
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/responses";
