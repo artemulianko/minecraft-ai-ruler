@@ -2,11 +2,13 @@ package com.minecraftai.managermod.service;
 import com.minecraftai.managermod.events.AbstractGameEvent;
 import jakarta.inject.Inject;
 
+import jakarta.inject.Singleton;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+@Singleton
 public class EventTracker {
     @Inject
     public EventTracker() {}

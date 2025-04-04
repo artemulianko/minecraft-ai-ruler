@@ -3,12 +3,13 @@ package com.minecraftai.managermod.service;
 import com.minecraftai.managermod.actions.AbstractAction;
 import com.minecraftai.managermod.di.ServerHolder;
 import jakarta.inject.Inject;
-import net.minecraft.server.MinecraftServer;
 
+import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+@Singleton
 public class ActionsProcessor {
     private final ServerHolder serverHolder;
     private final Queue<AbstractAction> pendingActions = new ConcurrentLinkedQueue<>();
