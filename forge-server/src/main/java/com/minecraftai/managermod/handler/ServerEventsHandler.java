@@ -15,6 +15,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -46,13 +47,10 @@ public class ServerEventsHandler {
     }
 
     @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        openAIClient.setupInstructions(List.of(
-                Prompts.DESCRIBE_AI_ROLE,
-                Prompts.DESCRIBE_ACTIONS
-        ));
-
+    public void onServerStarting(ServerStartingEvent event) throws IOException {
         serverHolder.setServer(event.getServer());
+        openAIClient.setupInstructions(Prompts.getInstructions());
+        openAIClient.sendInstructions();
 
         releaseEventsThread.submit(() ->
                 new Timer(true).scheduleAtFixedRate(new TimerTask() {
@@ -60,9 +58,10 @@ public class ServerEventsHandler {
                     public void run() {
                         List<AbstractGameEvent> events = eventTracker.releaseEvents();
                         List<AbstractAction> actions = eventsActionResponder.respond(events);
-                        actionsProcessor.scheduleActions(actions);
+
+                        if (actions != null) actionsProcessor.scheduleActions(actions);
                     }
-                }, 0, 5000)
+                }, 0, 15000)
         );
     }
 
@@ -81,7 +80,6 @@ public class ServerEventsHandler {
         eventTracker.track(new ChatMessagePosted(
                         player.getStringUUID(),
                         event.getRawText(),
-                        player.level().dimension(),
                         player.getOnPos()
                 )
         );

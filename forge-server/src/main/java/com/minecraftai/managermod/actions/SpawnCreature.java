@@ -18,12 +18,12 @@ public class SpawnCreature extends AbstractAction {
             "SPIDER", EntityType.SPIDER
     );
 
-    private Vec3i position;
-    private String entityType;
+    private final Vec3i position;
+    private final String entityType;
 
-    public SpawnCreature(Vec3i position, String entityType) {
-        this.position = position;
+    public SpawnCreature(String entityType, Vec3i position) {
         this.entityType = entityType;
+        this.position = position;
     }
 
     @Override

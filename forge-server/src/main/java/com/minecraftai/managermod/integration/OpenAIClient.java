@@ -1,22 +1,27 @@
 package com.minecraftai.managermod.integration;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.minecraftai.managermod.config.EnvConfig;
+import jakarta.inject.Inject;
 import okhttp3.*;
 
-import javax.inject.Inject;
+import javax.annotation.Nullable;
+import jakarta.inject.Singleton;
 import java.io.IOException;
-import java.util.List;
 
+@Singleton
 public class OpenAIClient {
+    public record ChatResponse(@Nullable String responseId, String message) {}
+    record ChatMessage(String role, String input) {}
+
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/responses";
-    private static final String MODEL_TYPE = "gpt-4o-mini";
+    private static final String MODEL_TYPE = "gpt-4o";
     private final String apiKey;
     private final OkHttpClient httpClient = new OkHttpClient();
 
     private final StringBuffer instructions = new StringBuffer();
-
     private String prevResponseId;
 
     @Inject
@@ -25,8 +30,29 @@ public class OpenAIClient {
     }
 
 
-    public void setupInstructions(List<String> messages) {
-         messages.forEach(instructions::append);
+    /**
+     * Sets up instructions by appending them to the existing instructions and preparing
+     * a JSON object with the necessary details for an API call.
+     *
+     * @param instructions The instructions to be added. These are assumed to provide
+     *                     specific guidance or context for subsequent API interactions.
+     */
+    public void setupInstructions(String instructions) {
+         this.instructions.append(instructions);
+         JsonObject instructionsCall = new JsonObject();
+
+         instructionsCall.addProperty("model", MODEL_TYPE);
+         instructionsCall.addProperty("input", this.instructions.toString());
+    }
+
+    /**
+     * Sends predefined instructions to the OpenAI API via a chat request.
+     *
+     * @return The response message from the OpenAI API as a string. If the API
+     **/
+    public void sendInstructions() throws IOException {
+        final var chatMessage = new ChatMessage("developer", this.instructions.toString());
+        callChat(chatMessage);
     }
 
     /**
@@ -36,19 +62,35 @@ public class OpenAIClient {
      * @return The assistant's response as a string.
      * @throws IOException If there are issues with the request.
      */
-    public String sendMessage(String userMessage) throws IOException {
-        // Prepare the request payload
-        JsonObject requestBody = new JsonObject();
+    public @Nullable ChatResponse chat(String userMessage) throws IOException {
+        final var chatMessage = new ChatMessage("user", userMessage);
 
+        return callChat(chatMessage);
+    }
+
+    /**
+     * Sends a chat message to the OpenAI API and processes the response.
+     *
+     * @param chatMessage The chat message to be sent, containing the role and input.
+     * @return A ChatResponse object containing the response ID and message from the OpenAI API.
+     *         Returns null if the request fails or the response cannot be parsed.
+     * @throws IOException If an error occurs while making the HTTP request.
+     */
+    private @Nullable ChatResponse callChat(ChatMessage chatMessage) throws IOException {
+        JsonObject inputJson = new JsonObject();
+        JsonArray inputArray = new JsonArray();
+        inputJson.addProperty("role", chatMessage.role());
+        inputJson.addProperty("content", chatMessage.input());
+        inputArray.add(inputJson);
+
+        JsonObject requestBody = new JsonObject();
         requestBody.addProperty("model", MODEL_TYPE);
-        requestBody.addProperty("instructions", instructions.toString());
-        requestBody.addProperty("input", userMessage);
+        requestBody.add("input", inputArray);
 
         if (prevResponseId != null) {
             requestBody.addProperty("previous_response_id", prevResponseId);
         }
 
-        // Send the HTTP POST request to OpenAI
         Request request = new Request.Builder()
                 .url(OPENAI_API_URL)
                 .addHeader("Authorization", "Bearer " + apiKey)
@@ -65,14 +107,12 @@ public class OpenAIClient {
                 return null;
             }
 
-            String responseMessage = "";
-
             try {
                 // Parse the response
                 String responseBody = response.body() != null ? response.body().string() : "";
                 JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
 
-                responseMessage = jsonResponse.getAsJsonObject()
+                String responseMessage = jsonResponse.getAsJsonObject()
                         .getAsJsonArray("output")
                         .get(0)
                         .getAsJsonObject()
@@ -83,11 +123,13 @@ public class OpenAIClient {
                         .getAsString();
 
                 prevResponseId = jsonResponse.get("id").getAsString();
+
+                return new ChatResponse(prevResponseId, responseMessage);
             } catch (Exception e) {
                 System.err.println("Failed to parse response: " + response);
             }
-
-            return responseMessage;
         }
+
+        return null;
     }
 }

@@ -1,64 +1,99 @@
 package com.minecraftai.managermod.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.*;
 import com.minecraftai.managermod.actions.AbstractAction;
+import com.minecraftai.managermod.actions.SendMessage;
+import com.minecraftai.managermod.actions.SpawnBlock;
 import com.minecraftai.managermod.actions.SpawnCreature;
-import com.minecraftai.managermod.config.JsonConfig;
 import com.minecraftai.managermod.di.ServerHolder;
 import com.minecraftai.managermod.events.AbstractGameEvent;
 import com.minecraftai.managermod.integration.OpenAIClient;
 import jakarta.inject.Inject;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.MinecraftServer;
+import jakarta.inject.Singleton;
+import net.minecraft.core.Position;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.Entity;
 
+import javax.annotation.Nullable;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Singleton
 public class EventsActionResponder {
-    private final static ObjectMapper objectMapper = JsonConfig.createObjectMapper();
     private final ServerHolder serverHolder;
     private final OpenAIClient openAIClient;
+    private final Gson serializer;
 
     @Inject
-    public EventsActionResponder(ServerHolder serverHolder, OpenAIClient openAIClient) {
+    public EventsActionResponder(ServerHolder serverHolder, OpenAIClient openAIClient, Gson serializer) {
         this.serverHolder = serverHolder;
         this.openAIClient = openAIClient;
+        this.serializer = serializer;
     }
 
     /**
      * Processes a list of game events and generates a corresponding list of actions.
      * If the event list is empty, no actions are returned.
      */
-    public List<AbstractAction> respond(List<AbstractGameEvent> events) {
-        Map<String, BlockPos> playersPositions = this.serverHolder
+    public @Nullable List<AbstractAction> respond(List<AbstractGameEvent> events) {
+        Map<String, Position> playersPositions = this.serverHolder
                 .getServer()
                 .getPlayerList()
                 .getPlayers()
                 .stream()
-                .collect(Collectors.toMap(Entity::getStringUUID, Entity::getOnPos));
+                .collect(Collectors.toMap(Entity::getStringUUID, it -> it.getOnPos().getCenter()));
 
         try {
-            String serverBatchMessage = objectMapper.writeValueAsString(Map.of(
+            final var serverBatchMessage = serializer.toJson(Map.of(
                     "events", events,
-                    "playersPositions", playersPositions
+                    "playerPositions", playersPositions
             ));
             System.out.println(serverBatchMessage);
 
-            final String aiResponse = openAIClient.sendMessage(serverBatchMessage);
+            final var aiResponse = openAIClient.chat(serverBatchMessage);
             System.out.println("AI RESPONSE: " + aiResponse);
 
-//            System.out.println(aiResponse);
-            // Log or use the eventsJson as needed
+            if (aiResponse == null) {
+                System.err.println("Empty response from AI");
+                return null;
+            }
+
+            JsonArray actions = JsonParser.parseString(aiResponse.message())
+                    .getAsJsonObject()
+                    .get("actions")
+                    .getAsJsonArray();
+
+            List<AbstractAction> actionList = new LinkedList<>();
+            for (JsonElement action : actions) {
+                JsonObject actionJson = action.getAsJsonObject();
+                String actionType = actionJson.get("type").getAsString();
+
+                try {
+                    AbstractAction actionEntity = switch (actionType) {
+                        case "SPAWN_CREATURE" -> new SpawnCreature(
+                                actionJson.get("creatureType").getAsString(),
+                                serializer.fromJson(actionJson.get("pos"), Vec3i.class)
+                        );
+                        case "PLACE_BLOCK" -> new SpawnBlock(
+                                actionJson.get("blockType").getAsString(),
+                                serializer.fromJson(actionJson.get("pos"), Vec3i.class)
+                        );
+                        case "SEND_MESSAGE" -> new SendMessage(actionJson.get("messageBody").getAsString());
+                        default -> throw new IllegalArgumentException("Unknown action type: " + actionType);
+                    };
+
+                    actionList.add(actionEntity);
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Failed to deserialize action: " + actionJson);
+                }
+            }
+
+            return actionList;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize events to JSON", e);
+            System.err.println("Failed to serialize events to JSON" + e);
+            return null;
         }
-
-        if (events.isEmpty()) {
-            return List.of();
-        }
-
-        return List.of();
     }
 }
