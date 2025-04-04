@@ -25,12 +25,12 @@ public class SpawnCreature extends AbstractAction {
             CreatureType.SPIDER.name(), EntityType.SPIDER
     );
 
-    private final Vec3i position;
-    private final String entityType;
+    private final Vec3i pos;
+    private final String creatureType;
 
-    public SpawnCreature(String entityType, Vec3i position) {
-        this.entityType = entityType;
-        this.position = position;
+    public SpawnCreature(String creatureType, Vec3i pos) {
+        this.creatureType = creatureType;
+        this.pos = pos;
     }
 
     @Override
@@ -41,9 +41,9 @@ public class SpawnCreature extends AbstractAction {
             return;
         }
 
-        EntityType<?> entity = entityMap.get(entityType);
+        EntityType<?> entity = entityMap.get(creatureType);
         if (entity == null) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Unknown entity type " + entityType);
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Unknown entity type " + creatureType);
             return;
         }
 
@@ -51,7 +51,7 @@ public class SpawnCreature extends AbstractAction {
         final var entityInstance = entity.create(level, EntitySpawnReason.COMMAND);
 
         if (entityInstance != null) {
-            entityInstance.setPos(this.position.getX(), this.position.getY(), this.position.getZ());
+            entityInstance.setPos(this.pos.getX(), this.pos.getY(), this.pos.getZ());
             level.addFreshEntity(entityInstance);
         }
     }

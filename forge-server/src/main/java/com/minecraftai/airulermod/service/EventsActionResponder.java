@@ -77,15 +77,10 @@ public class EventsActionResponder {
 
                 try {
                     AbstractAction actionEntity = switch (actionType) {
-                        case "SPAWN_CREATURE" -> new SpawnCreature(
-                                actionJson.get("creatureType").getAsString(),
-                                serializer.fromJson(actionJson.get("pos"), Vec3i.class)
-                        );
-                        case "PLACE_BLOCK" -> new SpawnBlock(
-                                actionJson.get("blockType").getAsString(),
-                                serializer.fromJson(actionJson.get("pos"), Vec3i.class)
-                        );
-                        case "SEND_MESSAGE" -> new SendMessage(actionJson.get("messageBody").getAsString());
+                        case "SPAWN_CREATURE" -> serializer.fromJson(actionJson, SpawnCreature.class);
+                        case "PLACE_BLOCK" -> serializer.fromJson(actionJson, SpawnBlock.class);
+                        case "SEND_MESSAGE" -> serializer.fromJson(actionJson, SendMessage.class);
+
                         default -> throw new IllegalArgumentException("Unknown action type: " + actionType);
                     };
 
