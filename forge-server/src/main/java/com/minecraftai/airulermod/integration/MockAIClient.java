@@ -1,12 +1,18 @@
 package com.minecraftai.airulermod.integration;
 
 import com.google.gson.Gson;
+import jakarta.inject.Singleton;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 
+@Singleton
 public class MockAIClient implements AIClient {
     private final Gson serializer = new Gson();
+
+    @Inject
+    public MockAIClient() {}
 
     @Override
     public ChatResponse chat(String userMessage) {

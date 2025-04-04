@@ -1,8 +1,8 @@
 package com.minecraftai.airulermod.di;
 
 import com.google.gson.Gson;
-import com.minecraftai.airulermod.config.EnvConfig;
 import com.minecraftai.airulermod.integration.*;
+import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 import jakarta.inject.Singleton;
@@ -15,17 +15,16 @@ public class AppModule {
         return new Gson();
     }
 
-    @Provides
-    @Singleton
-    @AIImplementation(AIType.OPENAI)
-    public AIClient provideOpenAIClient(EnvConfig envConfig) {
-        return new OpenAIClient(envConfig);
-    }
+    @Module
+    public abstract static class Bind {
+        @Binds
+        @Singleton
+        @AIImplementation(AIType.OPENAI)
+        public abstract AIClient provideOpenAIClient(OpenAIClient openAIClient);
 
-    @Provides
-    @Singleton
-    @AIImplementation(AIType.MOCK)
-    public AIClient provideMockAIClient() {
-        return new MockAIClient();
+        @Binds
+        @Singleton
+        @AIImplementation(AIType.MOCK)
+        public abstract AIClient provideMockAIClient(MockAIClient mockAIClient);
     }
 }
