@@ -10,12 +10,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SpawnCreature extends AbstractAction {
-    private static final Map<String, EntityType<?>> entityMap = Map.of(
-            "COW", EntityType.COW,
-            "CHICKEN", EntityType.CHICKEN,
+    enum CreatureType {
+        COW,
+        CHICKEN,
+        CREEPER,
+        SPIDER;
+    }
 
-            "CREEPER", EntityType.CREEPER,
-            "SPIDER", EntityType.SPIDER
+    private static final Map<String, EntityType<?>> entityMap = Map.of(
+            CreatureType.COW.name(), EntityType.COW,
+            CreatureType.CHICKEN.name(), EntityType.CHICKEN,
+
+            CreatureType.CREEPER.name(), EntityType.CREEPER,
+            CreatureType.SPIDER.name(), EntityType.SPIDER
     );
 
     private final Vec3i position;

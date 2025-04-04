@@ -5,7 +5,8 @@ import com.minecraftai.airulermod.constants.Prompts;
 import com.minecraftai.airulermod.di.ServerHolder;
 import com.minecraftai.airulermod.events.AbstractGameEvent;
 import com.minecraftai.airulermod.events.ChatMessagePosted;
-import com.minecraftai.airulermod.integration.OpenAIClient;
+import com.minecraftai.airulermod.integration.AIClient;
+import com.minecraftai.airulermod.integration.AIClientHolder;
 import com.minecraftai.airulermod.service.ActionsProcessor;
 import com.minecraftai.airulermod.service.EventTracker;
 import com.minecraftai.airulermod.service.EventsActionResponder;
@@ -15,7 +16,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -29,7 +29,7 @@ public class ServerEventsHandler {
     private final EventsActionResponder eventsActionResponder;
     private final EventTracker eventTracker;
     private final ServerHolder serverHolder;
-    private final OpenAIClient openAIClient;
+    private final AIClient aiClient;
 
     @Inject
     public ServerEventsHandler(
@@ -37,20 +37,20 @@ public class ServerEventsHandler {
             ActionsProcessor actionsProcessor,
             EventsActionResponder eventsActionResponder,
             EventTracker eventTracker,
-            OpenAIClient openAIClient
+            AIClientHolder aiClientHolder
     ) {
         this.serverHolder = serverHolder;
         this.actionsProcessor = actionsProcessor;
         this.eventsActionResponder = eventsActionResponder;
         this.eventTracker = eventTracker;
-        this.openAIClient = openAIClient;
+        this.aiClient = aiClientHolder.getAiClient();
     }
 
     @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) throws IOException {
+    public void onServerStarting(ServerStartingEvent event) {
         serverHolder.setServer(event.getServer());
-        openAIClient.setupInstructions(Prompts.getInstructions());
-        openAIClient.sendInstructions();
+        aiClient.setupInstructions(Prompts.getInstructions());
+        aiClient.sendInstructions();
 
         releaseEventsThread.submit(() ->
                 new Timer(true).scheduleAtFixedRate(new TimerTask() {

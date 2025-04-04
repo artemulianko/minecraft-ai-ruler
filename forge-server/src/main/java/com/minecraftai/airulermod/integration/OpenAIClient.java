@@ -8,27 +8,27 @@ import jakarta.inject.Inject;
 import okhttp3.*;
 
 import javax.annotation.Nullable;
-import jakarta.inject.Singleton;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
-@Singleton
-public class OpenAIClient {
-    public record ChatResponse(@Nullable String responseId, String message) {}
-    record ChatMessage(String role, String input) {}
-
+public class OpenAIClient implements AIClient {
+    private static final Logger logger = LoggerFactory.getLogger(OpenAIClient.class);
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/responses";
     private static final String MODEL_TYPE = "gpt-4o";
+
     private final String apiKey;
     private final OkHttpClient httpClient = new OkHttpClient();
-
     private final StringBuffer instructions = new StringBuffer();
+
     private String prevResponseId;
 
     @Inject
     public OpenAIClient(EnvConfig envConfig) {
         this.apiKey = envConfig.get("OPENAI_API_KEY");
     }
-
 
     /**
      * Sets up instructions by appending them to the existing instructions and preparing
@@ -37,6 +37,7 @@ public class OpenAIClient {
      * @param instructions The instructions to be added. These are assumed to provide
      *                     specific guidance or context for subsequent API interactions.
      */
+    @Override
     public void setupInstructions(String instructions) {
          this.instructions.append(instructions);
          JsonObject instructionsCall = new JsonObject();
@@ -47,11 +48,10 @@ public class OpenAIClient {
 
     /**
      * Sends predefined instructions to the OpenAI API via a chat request.
-     *
-     * @return The response message from the OpenAI API as a string. If the API
      **/
-    public void sendInstructions() throws IOException {
-        final var chatMessage = new ChatMessage("developer", this.instructions.toString());
+    @Override
+    public void sendInstructions() {
+        final var chatMessage = new AIClient.ChatMessage("developer", this.instructions.toString());
         callChat(chatMessage);
     }
 
@@ -60,10 +60,10 @@ public class OpenAIClient {
      *
      * @param userMessage The user input to send to the model.
      * @return The assistant's response as a string.
-     * @throws IOException If there are issues with the request.
      */
-    public @Nullable ChatResponse chat(String userMessage) throws IOException {
-        final var chatMessage = new ChatMessage("user", userMessage);
+    @Override
+    public @Nullable AIClient.ChatResponse chat(String userMessage) {
+        final var chatMessage = new AIClient.ChatMessage("user", userMessage);
 
         return callChat(chatMessage);
     }
@@ -74,22 +74,9 @@ public class OpenAIClient {
      * @param chatMessage The chat message to be sent, containing the role and input.
      * @return A ChatResponse object containing the response ID and message from the OpenAI API.
      *         Returns null if the request fails or the response cannot be parsed.
-     * @throws IOException If an error occurs while making the HTTP request.
      */
-    private @Nullable ChatResponse callChat(ChatMessage chatMessage) throws IOException {
-        JsonObject inputJson = new JsonObject();
-        JsonArray inputArray = new JsonArray();
-        inputJson.addProperty("role", chatMessage.role());
-        inputJson.addProperty("content", chatMessage.input());
-        inputArray.add(inputJson);
-
-        JsonObject requestBody = new JsonObject();
-        requestBody.addProperty("model", MODEL_TYPE);
-        requestBody.add("input", inputArray);
-
-        if (prevResponseId != null) {
-            requestBody.addProperty("previous_response_id", prevResponseId);
-        }
+    private @Nullable AIClient.ChatResponse callChat(AIClient.ChatMessage chatMessage) {
+        JsonObject requestBody = getRequestBody(chatMessage);
 
         Request request = new Request.Builder()
                 .url(OPENAI_API_URL)
@@ -100,9 +87,8 @@ public class OpenAIClient {
 
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                System.err.println("Unexpected code " + response);
-                assert response.body() != null;
-                System.err.println(response.body().string());
+                logger.error("Unexpected code {}", response);
+                if (response.body() != null) logger.debug(response.body().string());
 
                 return null;
             }
@@ -124,12 +110,32 @@ public class OpenAIClient {
 
                 prevResponseId = jsonResponse.get("id").getAsString();
 
-                return new ChatResponse(prevResponseId, responseMessage);
+                return new AIClient.ChatResponse(responseMessage);
             } catch (Exception e) {
-                System.err.println("Failed to parse response: " + response);
+                logger.error("Failed to parse response: {}", response);
             }
+        } catch (IOException e) {
+            logger.error("Failed to send chat request: {}", request);
         }
 
         return null;
+    }
+
+    private @NotNull JsonObject getRequestBody(ChatMessage chatMessage) {
+        JsonObject inputJson = new JsonObject();
+        JsonArray inputArray = new JsonArray();
+        inputJson.addProperty("role", chatMessage.role());
+        inputJson.addProperty("content", chatMessage.input());
+        inputArray.add(inputJson);
+
+        JsonObject requestBody = new JsonObject();
+        requestBody.addProperty("model", MODEL_TYPE);
+        requestBody.add("input", inputArray);
+
+        if (prevResponseId != null) {
+            requestBody.addProperty("previous_response_id", prevResponseId);
+        }
+
+        return requestBody;
     }
 }
