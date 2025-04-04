@@ -12,35 +12,10 @@ public class EnvConfig {
 
     @Inject
     public EnvConfig() {
-        // Load .env file
-        this.dotenv = loadDotenv();
-    }
-
-    private Dotenv loadDotenv() {
-        // Try multiple locations
-        String[] possiblePaths = {
-                ".",                          // Project root (development)
-                "src/main/resources",         // Standard resources directory
-                System.getProperty("user.dir"), // Absolute path
-                "/config"                     // Common deployment location
-        };
-
-        Exception lastException = null;
-
-        for (String path : possiblePaths) {
-            try {
-                return Dotenv.configure()
-                        .directory(path)
-                        .ignoreIfMissing()
-                        .load();
-            } catch (Exception e) {
-                lastException = e;
-                System.out.println("Failed to load .env from: " +
-                        Paths.get(path).toAbsolutePath());
-            }
-        }
-
-        throw new RuntimeException("Could not load .env from any location", lastException);
+        this.dotenv = Dotenv.configure()
+                .directory("../")
+                .ignoreIfMissing()
+                .load();
     }
 
     /**
