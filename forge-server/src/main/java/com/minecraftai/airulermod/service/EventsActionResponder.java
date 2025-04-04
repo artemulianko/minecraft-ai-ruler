@@ -1,13 +1,13 @@
-package com.minecraftai.managermod.service;
+package com.minecraftai.airulermod.service;
 
 import com.google.gson.*;
-import com.minecraftai.managermod.actions.AbstractAction;
-import com.minecraftai.managermod.actions.SendMessage;
-import com.minecraftai.managermod.actions.SpawnBlock;
-import com.minecraftai.managermod.actions.SpawnCreature;
-import com.minecraftai.managermod.di.ServerHolder;
-import com.minecraftai.managermod.events.AbstractGameEvent;
-import com.minecraftai.managermod.integration.OpenAIClient;
+import com.minecraftai.airulermod.actions.AbstractAction;
+import com.minecraftai.airulermod.actions.SendMessage;
+import com.minecraftai.airulermod.actions.SpawnBlock;
+import com.minecraftai.airulermod.actions.SpawnCreature;
+import com.minecraftai.airulermod.di.ServerHolder;
+import com.minecraftai.airulermod.events.AbstractGameEvent;
+import com.minecraftai.airulermod.integration.OpenAIClient;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import net.minecraft.core.Position;

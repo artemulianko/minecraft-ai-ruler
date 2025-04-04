@@ -1,4 +1,4 @@
-package com.minecraftai.managermod.actions;
+package com.minecraftai.airulermod.actions;
 
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.MinecraftServer;

@@ -1,14 +1,14 @@
-package com.minecraftai.managermod.handler;
+package com.minecraftai.airulermod.handler;
 
-import com.minecraftai.managermod.actions.AbstractAction;
-import com.minecraftai.managermod.constants.Prompts;
-import com.minecraftai.managermod.di.ServerHolder;
-import com.minecraftai.managermod.events.AbstractGameEvent;
-import com.minecraftai.managermod.events.ChatMessagePosted;
-import com.minecraftai.managermod.integration.OpenAIClient;
-import com.minecraftai.managermod.service.ActionsProcessor;
-import com.minecraftai.managermod.service.EventTracker;
-import com.minecraftai.managermod.service.EventsActionResponder;
+import com.minecraftai.airulermod.actions.AbstractAction;
+import com.minecraftai.airulermod.constants.Prompts;
+import com.minecraftai.airulermod.di.ServerHolder;
+import com.minecraftai.airulermod.events.AbstractGameEvent;
+import com.minecraftai.airulermod.events.ChatMessagePosted;
+import com.minecraftai.airulermod.integration.OpenAIClient;
+import com.minecraftai.airulermod.service.ActionsProcessor;
+import com.minecraftai.airulermod.service.EventTracker;
+import com.minecraftai.airulermod.service.EventsActionResponder;
 import jakarta.inject.Inject;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.TickEvent;
