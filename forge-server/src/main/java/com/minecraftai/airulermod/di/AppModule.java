@@ -1,4 +1,4 @@
-package com.minecraftai.managermod.di;
+package com.minecraftai.airulermod.di;
 
 import com.google.gson.Gson;
 import dagger.Module;

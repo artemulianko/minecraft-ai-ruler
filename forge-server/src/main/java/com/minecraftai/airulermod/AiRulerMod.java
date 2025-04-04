@@ -1,16 +1,16 @@
-package com.minecraftai.managermod;
+package com.minecraftai.airulermod;
 
-import com.minecraftai.managermod.di.DIContainer;
-import com.minecraftai.managermod.di.DaggerDIContainer;
+import com.minecraftai.airulermod.di.DIContainer;
+import com.minecraftai.airulermod.di.DaggerDIContainer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 
-@Mod(ManagerMod.MODID)
-public class ManagerMod {
-    public static final String MODID = "managermod";
+@Mod(AiRulerMod.MODID)
+public class AiRulerMod {
+    public static final String MODID = "airulermod";
     private static DIContainer container;
 
-    public ManagerMod() {
+    public AiRulerMod() {
         container = DaggerDIContainer.create();
 
         MinecraftForge.EVENT_BUS.register(this);

@@ -1,4 +1,4 @@
-package com.minecraftai.managermod.constants;
+package com.minecraftai.airulermod.constants;
 
 public class Prompts {
     private Prompts() {}

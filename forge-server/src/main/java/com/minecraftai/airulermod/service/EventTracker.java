@@ -1,5 +1,5 @@
-package com.minecraftai.managermod.service;
-import com.minecraftai.managermod.events.AbstractGameEvent;
+package com.minecraftai.airulermod.service;
+import com.minecraftai.airulermod.events.AbstractGameEvent;
 import jakarta.inject.Inject;
 
 import jakarta.inject.Singleton;

@@ -1,9 +1,9 @@
-package com.minecraftai.managermod.integration;
+package com.minecraftai.airulermod.integration;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.minecraftai.managermod.config.EnvConfig;
+import com.minecraftai.airulermod.config.EnvConfig;
 import jakarta.inject.Inject;
 import okhttp3.*;
 

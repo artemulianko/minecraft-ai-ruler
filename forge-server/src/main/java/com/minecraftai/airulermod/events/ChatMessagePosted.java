@@ -1,4 +1,4 @@
-package com.minecraftai.managermod.events;
+package com.minecraftai.airulermod.events;
 
 import net.minecraft.core.Vec3i;
 

@@ -1,7 +1,7 @@
-package com.minecraftai.managermod.service;
+package com.minecraftai.airulermod.service;
 
-import com.minecraftai.managermod.actions.AbstractAction;
-import com.minecraftai.managermod.di.ServerHolder;
+import com.minecraftai.airulermod.actions.AbstractAction;
+import com.minecraftai.airulermod.di.ServerHolder;
 import jakarta.inject.Inject;
 
 import jakarta.inject.Singleton;

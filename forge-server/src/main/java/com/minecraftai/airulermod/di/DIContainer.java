@@ -1,7 +1,7 @@
-package com.minecraftai.managermod.di;
+package com.minecraftai.airulermod.di;
 
-import com.minecraftai.managermod.handler.BlockEventsHandler;
-import com.minecraftai.managermod.handler.ServerEventsHandler;
+import com.minecraftai.airulermod.handler.BlockEventsHandler;
+import com.minecraftai.airulermod.handler.ServerEventsHandler;
 import dagger.Component;
 import jakarta.inject.Singleton;
 

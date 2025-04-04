@@ -1,8 +1,8 @@
-package com.minecraftai.managermod.handler;
+package com.minecraftai.airulermod.handler;
 
-import com.minecraftai.managermod.events.BlockDestroyed;
-import com.minecraftai.managermod.events.BlockPlaced;
-import com.minecraftai.managermod.service.EventTracker;
+import com.minecraftai.airulermod.events.BlockDestroyed;
+import com.minecraftai.airulermod.events.BlockPlaced;
+import com.minecraftai.airulermod.service.EventTracker;
 import jakarta.inject.Inject;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

@@ -1,4 +1,4 @@
-package com.minecraftai.managermod.events;
+package com.minecraftai.airulermod.events;
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.core.Vec3i;
 
