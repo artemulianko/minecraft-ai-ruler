@@ -1,9 +1,13 @@
 package com.minecraftai.airulermod.integration;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.google.gson.Gson;
+
+import java.util.List;
+import java.util.Map;
 
 public class MockAIClient implements AIClient {
+    private final Gson serializer = new Gson();
+
     @Override
     public ChatResponse chat(String userMessage) {
         return switch (userMessage) {
@@ -26,78 +30,57 @@ public class MockAIClient implements AIClient {
     }
 
     private ChatResponse sendMockMessage() {
-        JsonObject mockAction = new JsonObject();
-        mockAction.addProperty("type", "SEND_MESSAGE");
-        mockAction.addProperty("messageBody", "Response from mock AI.");
+        final var responseBody = Map.of(
+                "actions", List.of(
+                        Map.of(
+                                "type", "SEND_MESSAGE",
+                                "messageBody", "Response from mock AI."
+                        )
+                )
+        );
 
-        JsonArray actions = new JsonArray();
-        actions.add(mockAction);
-
-        JsonObject response = new JsonObject();
-        response.add("actions", actions);
-
-        return new ChatResponse(response.toString());
+        return new ChatResponse(serializer.toJson(responseBody));
     }
 
     private ChatResponse createMudBlock() {
-        JsonObject mockAction = new JsonObject();
-        mockAction.addProperty("type", "PLACE_BLOCK");
-        mockAction.addProperty("blockType", "MUD");
-        JsonObject pos = new JsonObject();
-        pos.addProperty("x", 10);
-        pos.addProperty("y", 10);
-        pos.addProperty("z", 10);
+        final var responseBody = Map.of(
+                "actions", List.of(
+                        Map.of(
+                                "type", "PLACE_BLOCK",
+                                "blockType", "MUD",
+                                "pos", Map.of("x", 10, "y", 10, "z", 10)
+                        )
+                )
+        );
 
-        mockAction.add("pos", pos);
-
-        JsonArray actions = new JsonArray();
-        actions.add(mockAction);
-
-        JsonObject response = new JsonObject();
-        response.add("actions", actions);
-
-        return new ChatResponse(response.toString());
+        return new ChatResponse(serializer.toJson(responseBody));
     }
 
     private ChatResponse createTNTBlock() {
-        JsonObject mockAction = new JsonObject();
-        mockAction.addProperty("type", "PLACE_BLOCK");
-        mockAction.addProperty("blockType", "TNT");
+        final var responseBody = Map.of(
+                "actions", List.of(
+                        Map.of(
+                                "type", "PLACE_BLOCK",
+                                "blockType", "TNT",
+                                "pos", Map.of("x", 10, "y", 10, "z", 10)
+                        )
+                )
+        );
 
-        JsonObject pos = new JsonObject();
-        pos.addProperty("x", 10);
-        pos.addProperty("y", 10);
-        pos.addProperty("z", 10);
-
-        mockAction.add("pos", pos);
-
-        JsonArray actions = new JsonArray();
-        actions.add(mockAction);
-
-        JsonObject response = new JsonObject();
-        response.add("actions", actions);
-
-        return new ChatResponse(response.toString());
+        return new ChatResponse(serializer.toJson(responseBody));
     }
 
     private ChatResponse spawnCow() {
-        JsonObject mockAction = new JsonObject();
-        mockAction.addProperty("type", "SPAWN_CREATURE");
-        mockAction.addProperty("creatureType", "COW");
+        final var responseBody = Map.of(
+                "actions", List.of(
+                        Map.of(
+                                "type", "SPAWN_CREATURE",
+                                "creatureType", "COW",
+                                "pos", Map.of("x", 10, "y", 10, "z", 10)
+                        )
+                )
+        );
 
-        JsonObject pos = new JsonObject();
-        pos.addProperty("x", 10);
-        pos.addProperty("y", 10);
-        pos.addProperty("z", 10);
-
-        mockAction.add("pos", pos);
-
-        JsonArray actions = new JsonArray();
-        actions.add(mockAction);
-
-        JsonObject response = new JsonObject();
-        response.add("actions", actions);
-
-        return new ChatResponse(response.toString());
+        return new ChatResponse(serializer.toJson(responseBody));
     }
 }
