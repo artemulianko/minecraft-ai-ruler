@@ -1,13 +1,11 @@
-package com.minecraftai.managermod.events;
+package com.minecraftai.airulermod.events;
 
 import net.minecraft.core.Vec3i;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.Level;
 
 public class ChatMessagePosted extends AbstractGameEvent {
     private final String message;
 
-    public ChatMessagePosted(String playerId, String message, ResourceKey<Level> dimension, Vec3i pos) {
+    public ChatMessagePosted(String playerId, String message, Vec3i pos) {
         super(playerId, pos);
         this.message = message;
     }

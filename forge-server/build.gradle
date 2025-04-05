@@ -126,8 +126,15 @@ dependencies {
     // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // DI
     implementation 'com.google.dagger:dagger:2.56.1'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.56.1'
+    // Serialization
+    implementation 'com.google.code.gson:gson:2.12.1'
+    // HTTP Client
+    implementation "com.squareup.okhttp3:okhttp:4.12.0"
+    // DotEnv
+    implementation 'io.github.cdimascio:dotenv-java:3.2.0'
 
     // Example mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -161,6 +168,12 @@ tasks.named('processResources', ProcessResources).configure {
 
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
+    }
+
+    from('.') {
+        include '.env'
+        // Optional: Apply property expansion to .env if needed
+        expand(project.properties)
     }
 }
 
