@@ -1,7 +1,9 @@
 package com.minecraftai.airulermod.di;
 
 import com.minecraftai.airulermod.handler.BlockEventsHandler;
+import com.minecraftai.airulermod.handler.PlayerEventsHandler;
 import com.minecraftai.airulermod.handler.ServerEventsHandler;
+import com.minecraftai.airulermod.service.StatsService;
 import dagger.Component;
 import jakarta.inject.Singleton;
 
@@ -10,4 +12,6 @@ import jakarta.inject.Singleton;
 public interface DIContainer {
     BlockEventsHandler getBlockEventsHandler();
     ServerEventsHandler getServerEventsHandler();
+    PlayerEventsHandler getPlayerEventsHandler();
+    StatsService getStatsService();
 }

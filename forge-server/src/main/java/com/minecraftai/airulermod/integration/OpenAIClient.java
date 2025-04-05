@@ -4,6 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.minecraftai.airulermod.config.EnvConfig;
+import com.minecraftai.airulermod.constants.Prompts;
+import com.minecraftai.airulermod.service.TokenCounter;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import okhttp3.*;
@@ -24,12 +26,14 @@ public class OpenAIClient implements AIClient {
     private final String apiKey;
     private final OkHttpClient httpClient = new OkHttpClient();
     private final StringBuffer instructions = new StringBuffer();
+    private final TokenCounter tokenCounter;
 
     private String prevResponseId;
 
     @Inject
-    public OpenAIClient(EnvConfig envConfig) {
+    public OpenAIClient(EnvConfig envConfig, TokenCounter tokenCounter) {
         this.apiKey = envConfig.get("OPENAI_API_KEY");
+        this.tokenCounter = tokenCounter;
     }
 
     /**
@@ -55,6 +59,9 @@ public class OpenAIClient implements AIClient {
     public void sendInstructions() {
         final var chatMessage = new AIClient.ChatMessage("developer", this.instructions.toString());
         callChat(chatMessage);
+        
+        // Reset the token counter after sending instructions
+        tokenCounter.resetCounter();
     }
 
     /**
@@ -65,9 +72,22 @@ public class OpenAIClient implements AIClient {
      */
     @Override
     public @Nullable AIClient.ChatResponse chat(String userMessage) {
+        // Check if we need to refresh instructions based on token count
+        if (tokenCounter.addMessage(userMessage.length())) {
+            logger.info("Token threshold reached, resending instructions...");
+            setupInstructions(Prompts.getInstructions());
+            sendInstructions();
+        }
+        
         final var chatMessage = new AIClient.ChatMessage("user", userMessage);
-
-        return callChat(chatMessage);
+        AIClient.ChatResponse response = callChat(chatMessage);
+        
+        // Track response tokens
+        if (response != null) {
+            tokenCounter.addMessage(response.message().length());
+        }
+        
+        return response;
     }
 
     /**

@@ -2,6 +2,8 @@ package com.minecraftai.airulermod.events;
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.core.Vec3i;
 
+import javax.annotation.Nullable;
+
 public abstract class AbstractGameEvent {
     /**
      * Represents the unique identifier of a player associated with the game event.
@@ -14,8 +16,10 @@ public abstract class AbstractGameEvent {
      * Represents the position related to a specific game event in a three-dimensional
      * coordinate system. Typically used to identify the location where the event occurred,
      * such as block placement, destruction, or other positional events in the game world.
+     * May be null for events that don't have a specific position.
      */
     @SerializedName("pos")
+    @Nullable
     private final Vec3i pos;
 
     /**
@@ -34,17 +38,25 @@ public abstract class AbstractGameEvent {
     @SerializedName("event")
     private final String eventName;
 
-    public AbstractGameEvent(String playerId, Vec3i pos) {
+    public AbstractGameEvent(String playerId, @Nullable Vec3i pos) {
         this.playerId = playerId;
         this.timestamp = System.currentTimeMillis();
         this.pos = pos;
         eventName = this.getClass().getSimpleName();
     }
 
+    /**
+     * Constructor for events that don't have a specific position.
+     */
+    public AbstractGameEvent(String playerId) {
+        this(playerId, null);
+    }
+
     public String getPlayerId() {
         return playerId;
     }
 
+    @Nullable
     public Vec3i getPos() {
         return pos;
     }

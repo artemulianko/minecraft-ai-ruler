@@ -1,10 +1,12 @@
 package com.minecraftai.airulermod.actions;
 
+import com.minecraftai.airulermod.utils.PositionUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.*;
 
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,9 +23,39 @@ public class SpawnBlock extends AbstractAction {
      */
     private static int SPAWN_BLOCK_MODE = 3;
 
+    // Map of all available block types that can be spawned
+    private static final Map<String, Block> BLOCK_MAP = Map.ofEntries(
+        // Original blocks
+        Map.entry("MUD", Blocks.MUD),
+        Map.entry("WATER", Blocks.WATER),
+        Map.entry("LAVA", Blocks.LAVA),
+        Map.entry("ANVIL", Blocks.ANVIL),
+        Map.entry("TNT", Blocks.TNT),
+        
+        // New blocks
+        Map.entry("STONE", Blocks.STONE),
+        Map.entry("DIRT", Blocks.DIRT),
+        Map.entry("GRASS_BLOCK", Blocks.GRASS_BLOCK),
+        Map.entry("SAND", Blocks.SAND),
+        Map.entry("GRAVEL", Blocks.GRAVEL),
+        Map.entry("BEDROCK", Blocks.BEDROCK),
+        Map.entry("GOLD_BLOCK", Blocks.GOLD_BLOCK),
+        Map.entry("DIAMOND_BLOCK", Blocks.DIAMOND_BLOCK),
+        Map.entry("EMERALD_BLOCK", Blocks.EMERALD_BLOCK),
+        Map.entry("IRON_BLOCK", Blocks.IRON_BLOCK)
+    );
+
     public SpawnBlock(String blockType, Vec3i pos) {
         this.blockType = blockType;
         this.pos = pos;
+    }
+
+    /**
+     * Returns a list of all available block types as strings
+     * @return List of block type names
+     */
+    public static List<String> getAvailableBlockTypes() {
+        return new ArrayList<>(BLOCK_MAP.keySet());
     }
 
     /**
@@ -42,21 +74,16 @@ public class SpawnBlock extends AbstractAction {
             return;
         }
 
-        final var block = switch (blockType) {
-            case "MUD" -> Blocks.MUD.defaultBlockState();
-            case "WATER" -> Blocks.WATER.defaultBlockState();
-            case "LAVA" -> Blocks.LAVA.defaultBlockState();
-            case "ANVIL" -> Blocks.ANVIL.defaultBlockState();
-            case "TNT" -> Blocks.TNT.defaultBlockState();
-            // Add other block types here
-            default -> null;
-        };
-
+        Block block = BLOCK_MAP.get(blockType);
         if (block == null) {
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Unknown block type " + blockType);
             return;
         }
 
-        level.setBlock(new BlockPos(pos), block, SPAWN_BLOCK_MODE);
+        // Find the nearest safe position to place the block
+        BlockPos safePos = PositionUtils.findNearestEmptyPosition(level, pos);
+        
+        // Place the block at the safe position
+        level.setBlock(safePos, block.defaultBlockState(), SPAWN_BLOCK_MODE);
     }
 }

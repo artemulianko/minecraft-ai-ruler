@@ -1,18 +1,20 @@
 package com.minecraftai.airulermod.handler;
 
-import com.minecraftai.airulermod.events.BlockDestroyed;
-import com.minecraftai.airulermod.events.BlockPlaced;
-import com.minecraftai.airulermod.service.EventTracker;
+import com.minecraftai.airulermod.service.StatsService;
 import jakarta.inject.Inject;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import java.util.logging.Logger;
+
 public class BlockEventsHandler {
-    private final EventTracker eventTracker;
+    private static final Logger LOGGER = Logger.getLogger(BlockEventsHandler.class.getName());
+    
+    private final StatsService statsService;
 
     @Inject
-    public BlockEventsHandler(EventTracker eventTracker) {
-        this.eventTracker = eventTracker;
+    public BlockEventsHandler(StatsService statsService) {
+        this.statsService = statsService;
     }
 
     @SubscribeEvent
@@ -21,10 +23,13 @@ public class BlockEventsHandler {
         if (event.getLevel().isClientSide()) return;
 
         if (event.getEntity() != null) {
-            eventTracker.track(new BlockPlaced(event.getEntity().getStringUUID(), event.getPos()));
+            // Track block placement for building stats
+            String playerId = event.getEntity().getStringUUID();
+            long timestamp = System.currentTimeMillis();
+            statsService.trackBuildingEvent(playerId, timestamp);
         } else {
             // Handle cases where the block was not placed by a known entity
-            System.out.printf("Added BlockEvent {%s} by {unknown entity}%n", event.getPos().toString());
+            LOGGER.info(String.format("Added BlockEvent {%s} by {unknown entity}", event.getPos().toString()));
         }
     }
 
@@ -33,6 +38,9 @@ public class BlockEventsHandler {
         // Ignore client events
         if (event.getLevel().isClientSide()) return;
 
-        eventTracker.track(new BlockDestroyed(event.getPlayer().getStringUUID(), event.getPos()));
+        // Track mining stats directly without creating an event object
+        String playerId = event.getPlayer().getStringUUID();
+        long timestamp = System.currentTimeMillis();
+        statsService.trackMiningEvent(playerId, timestamp);
     }
 }

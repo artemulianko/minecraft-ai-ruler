@@ -11,7 +11,7 @@ public class AIClientHolder {
     private final AIClient aiClient;
 
     @Inject
-    public AIClientHolder(@AIImplementation(AIType.MOCK) AIClient aiClient) {
+    public AIClientHolder(@AIImplementation(AIType.OPENAI) AIClient aiClient) {
         this.aiClient = aiClient;
     }
 
