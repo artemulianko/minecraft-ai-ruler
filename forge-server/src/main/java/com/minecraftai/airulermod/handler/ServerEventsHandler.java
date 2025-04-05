@@ -1,12 +1,15 @@
-package com.minecraftai.managermod.handler;
+package com.minecraftai.airulermod.handler;
 
-import com.minecraftai.managermod.actions.AbstractAction;
-import com.minecraftai.managermod.di.ServerHolder;
-import com.minecraftai.managermod.events.AbstractGameEvent;
-import com.minecraftai.managermod.events.ChatMessagePosted;
-import com.minecraftai.managermod.service.ActionsProcessor;
-import com.minecraftai.managermod.service.EventTracker;
-import com.minecraftai.managermod.service.EventsActionResponder;
+import com.minecraftai.airulermod.actions.AbstractAction;
+import com.minecraftai.airulermod.constants.Prompts;
+import com.minecraftai.airulermod.di.ServerHolder;
+import com.minecraftai.airulermod.events.AbstractGameEvent;
+import com.minecraftai.airulermod.events.ChatMessagePosted;
+import com.minecraftai.airulermod.integration.AIClient;
+import com.minecraftai.airulermod.di.AIClientHolder;
+import com.minecraftai.airulermod.service.ActionsProcessor;
+import com.minecraftai.airulermod.service.EventTracker;
+import com.minecraftai.airulermod.service.EventsActionResponder;
 import jakarta.inject.Inject;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.TickEvent;
@@ -26,18 +29,28 @@ public class ServerEventsHandler {
     private final EventsActionResponder eventsActionResponder;
     private final EventTracker eventTracker;
     private final ServerHolder serverHolder;
+    private final AIClient aiClient;
 
     @Inject
-    public ServerEventsHandler(ServerHolder serverHolder, ActionsProcessor actionsProcessor, EventsActionResponder eventsActionResponder, EventTracker eventTracker) {
+    public ServerEventsHandler(
+            ServerHolder serverHolder,
+            ActionsProcessor actionsProcessor,
+            EventsActionResponder eventsActionResponder,
+            EventTracker eventTracker,
+            AIClientHolder aiClientHolder
+    ) {
         this.serverHolder = serverHolder;
         this.actionsProcessor = actionsProcessor;
         this.eventsActionResponder = eventsActionResponder;
         this.eventTracker = eventTracker;
+        this.aiClient = aiClientHolder.getAiClient();
     }
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         serverHolder.setServer(event.getServer());
+        aiClient.setupInstructions(Prompts.getInstructions());
+        aiClient.sendInstructions();
 
         releaseEventsThread.submit(() ->
                 new Timer(true).scheduleAtFixedRate(new TimerTask() {
@@ -45,9 +58,10 @@ public class ServerEventsHandler {
                     public void run() {
                         List<AbstractGameEvent> events = eventTracker.releaseEvents();
                         List<AbstractAction> actions = eventsActionResponder.respond(events);
-                        actionsProcessor.scheduleActions(actions);
+
+                        if (actions != null) actionsProcessor.scheduleActions(actions);
                     }
-                }, 0, 5000)
+                }, 0, 15000)
         );
     }
 
@@ -64,11 +78,10 @@ public class ServerEventsHandler {
         var player = event.getPlayer();
 
         eventTracker.track(new ChatMessagePosted(
-                player.getStringUUID(),
-                event.getRawText(),
-                player.level().dimension(),
-                player.getOnPos()
-            )
+                        player.getStringUUID(),
+                        event.getRawText(),
+                        player.getOnPos()
+                )
         );
     }
 }
