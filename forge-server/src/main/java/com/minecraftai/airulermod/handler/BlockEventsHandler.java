@@ -1,6 +1,6 @@
 package com.minecraftai.airulermod.handler;
 
-import com.minecraftai.airulermod.service.StatsService;
+import com.minecraftai.airulermod.service.StatsTracker;
 import jakarta.inject.Inject;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -10,10 +10,10 @@ import java.util.logging.Logger;
 public class BlockEventsHandler {
     private static final Logger LOGGER = Logger.getLogger(BlockEventsHandler.class.getName());
     
-    private final StatsService statsService;
+    private final StatsTracker statsService;
 
     @Inject
-    public BlockEventsHandler(StatsService statsService) {
+    public BlockEventsHandler(StatsTracker statsService) {
         this.statsService = statsService;
     }
 

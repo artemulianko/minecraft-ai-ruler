@@ -27,7 +27,7 @@ public class MockAIClient implements AIClient {
     }
 
     @Override
-    public void setupInstructions(String instructions) {
+    public void setInstructions(String instructions) {
         // Do nothing
     }
 

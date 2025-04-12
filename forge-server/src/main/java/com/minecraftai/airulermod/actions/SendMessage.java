@@ -19,8 +19,7 @@ public class SendMessage extends AbstractAction {
      */
     @Override
     public void execute(MinecraftServer server) {
-        // Create the message to broadcast
-        Component message = Component.literal(messageBody); // Customize this message
+        Component message = Component.literal(messageBody);
 
         // Broadcast the message to all players
         server.getPlayerList().broadcastSystemMessage(message, false);

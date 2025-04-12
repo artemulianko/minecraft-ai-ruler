@@ -5,13 +5,10 @@ import com.minecraftai.airulermod.stats.PlayerMiningRate;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.SynchronousQueue;
 import java.util.logging.Logger;
 
 /**
@@ -19,32 +16,25 @@ import java.util.logging.Logger;
  * and running timers to manage these statistics.
  */
 @Singleton
-public class StatsService {
-    private static final Logger LOGGER = Logger.getLogger(StatsService.class.getName());
-    
-    // Maximum number of events to keep per player
+public class StatsTracker {
+    private static final Logger LOGGER = Logger.getLogger(StatsTracker.class.getName());
+
     private static final int MAX_EVENTS_PER_PLAYER = 200;
-    // Milliseconds in a minute
     private static final long MINUTE_IN_MS = 60 * 1000;
-    // Cleanup interval in milliseconds (30 seconds)
     private static final long CLEANUP_INTERVAL = 30000;
-    
-    // Map of player IDs to their mining events
+
     private final Map<String, Deque<BlockEvent>> playerMiningEvents = new ConcurrentHashMap<>();
-    // Map of player IDs to their building events
     private final Map<String, Deque<BlockEvent>> playerBuildingEvents = new ConcurrentHashMap<>();
-    // Timer for cleanup tasks
+
     private Timer cleanupTimer;
 
     @Inject
-    public StatsService() {
-        initializeTimers();
-    }
+    public StatsTracker() {}
     
     /**
      * Initialize timers for stats management
      */
-    private void initializeTimers() {
+    public void initializeTimers() {
         cleanupTimer = new Timer("StatsCleanupTimer", true);
         cleanupTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -53,7 +43,6 @@ public class StatsService {
                     cleanupOldEvents();
                 } catch (Exception e) {
                     LOGGER.severe("Error in stats cleanup task: " + e.getMessage());
-                    e.printStackTrace();
                 }
             }
         }, CLEANUP_INTERVAL, CLEANUP_INTERVAL);
@@ -67,8 +56,8 @@ public class StatsService {
     public void trackMiningEvent(String playerId, long timestamp) {
         // Get or create the player's event queue
         Deque<BlockEvent> playerEvents = playerMiningEvents.computeIfAbsent(
-                playerId, 
-                k -> new LinkedList<>()
+                playerId,
+                k -> new ConcurrentLinkedDeque<>()
         );
 
         // Add the new mining event
@@ -89,7 +78,7 @@ public class StatsService {
         // Get or create the player's event queue
         Deque<BlockEvent> playerEvents = playerBuildingEvents.computeIfAbsent(
                 playerId, 
-                k -> new LinkedList<>()
+                k -> new ConcurrentLinkedDeque<>()
         );
 
         // Add the new building event

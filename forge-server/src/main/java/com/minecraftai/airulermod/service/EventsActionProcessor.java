@@ -62,136 +62,60 @@ public class EventsActionProcessor {
         this.actionsParser = actionsParser;
     }
 
-    /**
-     * Processes a list of game events by sending them to the AI.
-     * With the new ping mechanism, we don't process actions here anymore.
-     */
-    public void sendEvents(List<AbstractGameEvent> events) {
-        if (events.isEmpty()) {
-            return;
-        }
-        
-        Map<String, Position> playersPositions = this.serverHolder
-                .getServer()
-                .getPlayerList()
-                .getPlayers()
-                .stream()
-                .collect(Collectors.toMap(Entity::getStringUUID, it -> it.getOnPos().getCenter()));
+    public @Nullable List<AbstractAction> process(
+            Collection<AbstractGameEvent> events,
+            Map<String, Map<String, ?>> stats
+    ) {
+        final var playersPositions = collectPositions();
 
-        try {
-            final var serverBatchMessage = serializer.toJson(Map.of(
-                    "events", events,
-                    "playerPositions", playersPositions
-            ));
-            LOGGER.fine("Sending events to AI: " + serverBatchMessage);
-            
-            final var aiResponse = aiClient.chat(serverBatchMessage);
-            LOGGER.info("AI response to events received, length: " + 
-                   (aiResponse != null ? aiResponse.message().length() : 0) + " characters");
-            
-            if (aiResponse == null) {
-                LOGGER.warning("Empty response received from AI for events");
-            }
-            
-            // We don't process actions from events directly anymore
-            // The ping mechanism will request actions separately
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to process AI response for events", e);
-        }
-    }
-    
-    /**
-     * Process player statistics separately from game events.
-     * This allows for different handling of stats vs. events.
-     *
-     * @param stats Collection of player statistics (mining and building rates)
-     */
-    public void sendStats(Collection<?> stats) {
-        if (stats.isEmpty()) {
-            return;
-        }
-        
-        Map<String, Position> playersPositions = this.serverHolder
-                .getServer()
-                .getPlayerList()
-                .getPlayers()
-                .stream()
-                .collect(Collectors.toMap(Entity::getStringUUID, it -> it.getOnPos().getCenter()));
+        final var serverBatchMessage = serializer.toJson(Map.of(
+                "events", events,
+                "stats", stats,
+                "playerPositions", playersPositions
+        ));
+        LOGGER.fine("serverBatchMessage: " + serverBatchMessage);
 
-        try {
-            final var statsBatchMessage = serializer.toJson(Map.of(
-                    "stats", stats,
-                    "playerPositions", playersPositions
-            ));
-            LOGGER.fine("Sending stats to AI: " + statsBatchMessage);
-            
-            final var aiResponse = aiClient.chat(statsBatchMessage);
-            LOGGER.info("AI response to stats received, length: " + 
-                   (aiResponse != null ? aiResponse.message().length() : 0) + " characters");
-            
-            if (aiResponse == null) {
-                LOGGER.warning("Empty response received from AI for stats");
-            }
-            
-            // We don't process actions from stats or events directly anymore
-            // The ping mechanism will request actions separately
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to process AI response for stats", e);
-        }
-    }
-    
-    /**
-     * Send a ping message to the AI to request actions based on previously sent events/stats.
-     * This is the only method that actually returns actions to execute.
-     *
-     * @return List of actions to perform based on the AI's response
-     */
-    public @Nullable List<AbstractAction> ping() {
-        try {
-            LOGGER.fine("Sending ping to AI to request actions");
-            
-            // Use the correct ping format as specified in the prompt
-            final var aiResponse = aiClient.chat("{\"ping\":true}");
-            LOGGER.info("AI response to ping received, length: " + 
-                   (aiResponse != null ? aiResponse.message().length() : 0) + " characters");
-            
-            if (aiResponse == null) {
-                LOGGER.warning("Empty response received from AI for ping");
-                return null;
-            }
-            
-            // Process the response to get actions
-            JsonObject responseJson = JsonParser.parseString(aiResponse.message()).getAsJsonObject();
-            
-            // Check if actions field exists and is an array
-            if (!responseJson.has("actions") || !responseJson.get("actions").isJsonArray()) {
-                LOGGER.warning("No actions field in AI response");
-                return null;
-            }
-            
-            JsonArray actions = responseJson.get("actions").getAsJsonArray();
-            
-            // If array is empty, return empty list (no actions to take)
-            if (actions.isEmpty()) {
-                LOGGER.fine("AI returned empty actions array - no actions to take");
-                return List.of();
-            }
+        final var aiResponse = aiClient.chat(serverBatchMessage);
+        LOGGER.info("AI response to events received, length: " +
+                (aiResponse != null ? aiResponse.message().length() : 0) + " characters");
 
-            List<AbstractAction> actionList = new LinkedList<>();
-            for (JsonElement action : actions) {
-                JsonObject actionJson = action.getAsJsonObject();
-                final var actionEntity = actionsParser.parse(actionJson);
-
-                if (actionEntity != null) {
-                    actionList.add(actionEntity);
-                }
-            }
-
-            LOGGER.info("Processed " + actionList.size() + " actions from ping response");
-            return actionList;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to process AI response for ping", e);
+        if (aiResponse == null) {
+            LOGGER.warning("Empty response received from AI for events");
             return null;
         }
+
+        // Process the response to get actions
+        JsonObject responseJson = JsonParser.parseString(aiResponse.message()).getAsJsonObject();
+
+        // Check if actions field exists and is an array
+        if (!responseJson.has("actions") || !responseJson.get("actions").isJsonArray()) {
+            LOGGER.warning("No actions field in AI response");
+            return null;
+        }
+
+        JsonArray actions = responseJson.get("actions").getAsJsonArray();
+
+        List<AbstractAction> actionList = new LinkedList<>();
+        for (JsonElement action : actions) {
+            JsonObject actionJson = action.getAsJsonObject();
+            final var actionEntity = actionsParser.parse(actionJson);
+
+            if (actionEntity != null) {
+                actionList.add(actionEntity);
+            }
+        }
+
+        LOGGER.info("Processed " + actionList.size() + " actions from ping response");
+
+        return actionList;
+    }
+
+    private Map<String, Position> collectPositions() {
+        return this.serverHolder
+                .getServer()
+                .getPlayerList()
+                .getPlayers()
+                .stream()
+                .collect(Collectors.toMap(Entity::getStringUUID, it -> it.getOnPos().getCenter()));
     }
 }

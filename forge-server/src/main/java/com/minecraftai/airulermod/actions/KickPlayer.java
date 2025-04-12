@@ -32,8 +32,8 @@ public class KickPlayer extends AbstractAction {
     @Override
     public void execute(MinecraftServer server) {
         try {
-            // Find the player by UUID
-            ServerPlayer player = null;
+            ServerPlayer player;
+
             try {
                 UUID playerUUID = UUID.fromString(playerId);
                 player = server.getPlayerList().getPlayer(playerUUID);
@@ -46,8 +46,7 @@ public class KickPlayer extends AbstractAction {
                 LOGGER.warning("Cannot kick player: Player with ID " + playerId + " not found or offline");
                 return;
             }
-            
-            // Create the kick message
+
             Component kickMessage = Component.literal(reason);
             
             // Kick the player

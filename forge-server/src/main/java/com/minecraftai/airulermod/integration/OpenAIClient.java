@@ -25,9 +25,9 @@ public class OpenAIClient implements AIClient {
 
     private final String apiKey;
     private final OkHttpClient httpClient = new OkHttpClient();
-    private final StringBuffer instructions = new StringBuffer();
     private final TokenCounter tokenCounter;
 
+    private String instructions;
     private String prevResponseId;
 
     @Inject
@@ -37,19 +37,14 @@ public class OpenAIClient implements AIClient {
     }
 
     /**
-     * Sets up instructions by appending them to the existing instructions and preparing
-     * a JSON object with the necessary details for an API call.
+     * Sets the instructions to be sent to the OpenAI API.
+     * These instructions can be used to configure or guide the AI.
      *
-     * @param instructions The instructions to be added. These are assumed to provide
-     *                     specific guidance or context for subsequent API interactions.
+     * @param instructions The instructions to be set as a string.
      */
     @Override
-    public void setupInstructions(String instructions) {
-         this.instructions.append(instructions);
-         JsonObject instructionsCall = new JsonObject();
-
-         instructionsCall.addProperty("model", MODEL_TYPE);
-         instructionsCall.addProperty("input", this.instructions.toString());
+    public void setInstructions(String instructions) {
+         this.instructions = instructions;
     }
 
     /**
@@ -57,7 +52,7 @@ public class OpenAIClient implements AIClient {
      **/
     @Override
     public void sendInstructions() {
-        final var chatMessage = new AIClient.ChatMessage("developer", this.instructions.toString());
+        final var chatMessage = new AIClient.ChatMessage("developer", instructions);
         callChat(chatMessage);
         
         // Reset the token counter after sending instructions
@@ -75,7 +70,7 @@ public class OpenAIClient implements AIClient {
         // Check if we need to refresh instructions based on token count
         if (tokenCounter.addMessage(userMessage.length())) {
             logger.info("Token threshold reached, resending instructions...");
-            setupInstructions(Prompts.getInstructions());
+            setInstructions(Prompts.getInstructions());
             sendInstructions();
         }
         

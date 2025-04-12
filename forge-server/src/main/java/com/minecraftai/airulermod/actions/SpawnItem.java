@@ -86,13 +86,6 @@ public class SpawnItem extends AbstractAction {
     }
     
     /**
-     * Constructor with default count of 1
-     */
-    public SpawnItem(String itemType, Vec3i pos) {
-        this(itemType, pos, 1);
-    }
-    
-    /**
      * Returns a list of all available item types
      * @return List of item type names
      */
@@ -104,24 +97,23 @@ public class SpawnItem extends AbstractAction {
     public void execute(MinecraftServer server) {
         var level = getLevel(server);
         if (level == null) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "No level found.");
+            getLogger().severe("No level found.");
             return;
         }
-        
-        // Get the item from the map
+
         Item item = ITEM_MAP.get(itemType);
         if (item == null) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Unknown item type: " + itemType);
+            getLogger().severe("Unknown item type: " + itemType);
             return;
         }
-        
-        // Find a safe position to spawn the item
+
         BlockPos safePos = PositionUtils.findNearestEmptyPosition(level, pos);
-        
-        // Create the item stack with the specified count
+        if (safePos == null) {
+            getLogger().severe("No safe position found for " + itemType + " at " + pos);
+            return;
+        }
+
         ItemStack itemStack = new ItemStack(item, count);
-        
-        // Create an item entity and add it to the world
         ItemEntity itemEntity = new ItemEntity(
             level, 
             safePos.getX() + 0.5, 
@@ -132,8 +124,6 @@ public class SpawnItem extends AbstractAction {
         
         // Set some reasonable velocity for the item
         itemEntity.setDeltaMovement(0, 0.2, 0);
-        
-        // Add the entity to the world
         level.addFreshEntity(itemEntity);
     }
 }

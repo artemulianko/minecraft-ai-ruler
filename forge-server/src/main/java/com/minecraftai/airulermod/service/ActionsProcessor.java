@@ -16,7 +16,7 @@ public class ActionsProcessor {
     private static final Logger LOGGER = Logger.getLogger(ActionsProcessor.class.getName());
     
     // Maximum actions to process in a single tick
-    private static final int MAX_ACTIONS_PER_TICK = 50;
+    private static final int MAX_ACTIONS_PER_TICK = 10;
     
     private final ServerHolder serverHolder;
     private final Queue<AbstractAction> pendingActions = new ConcurrentLinkedQueue<>();
@@ -35,9 +35,17 @@ public class ActionsProcessor {
         LOGGER.info("Scheduled " + actions.size() + " new actions. Total pending: " + pendingActions.size());
     }
 
+
     /**
-     * Processes actions from the queue at a controlled rate.
-     * Processes at most MAX_ACTIONS_PER_TICK actions per server tick to avoid overwhelming the server.
+     * Processes a queue of pending actions and executes them in a controlled manner.
+     *
+     * This method limits the number of actions processed per invocation to a maximum
+     * defined by `MAX_ACTIONS_PER_TICK`. If the queue of pending actions is not empty,
+     * it will process up to the allowed limit and log each action's execution.
+     * Any errors occurring during execution are logged and do not stop the processing of subsequent actions.
+     *
+     * If there are actions remaining in the queue after processing all that are allowed,
+     * those will be logged for reference.
      */
     public void processActions() {
         // If no actions, nothing to do

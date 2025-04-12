@@ -70,20 +70,22 @@ public class SpawnBlock extends AbstractAction {
     public void execute(MinecraftServer server) {
         var level = getLevel(server);
         if (level == null) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "No level found.");
+            getLogger().severe("No level found.");
             return;
         }
 
         Block block = BLOCK_MAP.get(blockType);
         if (block == null) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Unknown block type " + blockType);
+            getLogger().severe("Unknown block type " + blockType);
             return;
         }
 
-        // Find the nearest safe position to place the block
         BlockPos safePos = PositionUtils.findNearestEmptyPosition(level, pos);
-        
-        // Place the block at the safe position
+        if (safePos == null) {
+            getLogger().severe("No safe position found for " + blockType + " at " + pos);
+            return;
+        }
+
         level.setBlock(safePos, block.defaultBlockState(), SPAWN_BLOCK_MODE);
     }
 }

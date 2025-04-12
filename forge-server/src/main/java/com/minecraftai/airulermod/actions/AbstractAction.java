@@ -5,6 +5,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
+import java.util.logging.Logger;
 
 public abstract class AbstractAction {
     /**
@@ -50,5 +51,14 @@ public abstract class AbstractAction {
      */
     public String getName() {
         return this.getClass().getSimpleName();
+    }
+
+    /**
+     * Retrieves a Logger instance associated with the class implementing this method.
+     *
+     * @return a Logger instance configured for the current class
+     */
+    protected final Logger getLogger() {
+        return Logger.getLogger(this.getClass().getName());
     }
 }
