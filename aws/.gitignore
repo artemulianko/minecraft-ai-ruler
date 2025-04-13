@@ -1,0 +1,14 @@
+.DS_Store
+node_modules
+dist
+cdk.out
+.cdk.staging
+*.js
+!jest.config.js
+*.d.ts
+.env
+.idea
+.vscode
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
