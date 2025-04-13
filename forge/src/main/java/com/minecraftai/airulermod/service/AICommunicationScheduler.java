@@ -2,8 +2,8 @@ package com.minecraftai.airulermod.service;
 
 import com.minecraftai.airulermod.actions.AbstractAction;
 import jakarta.inject.Singleton;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
