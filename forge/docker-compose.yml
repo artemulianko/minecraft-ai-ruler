@@ -1,0 +1,16 @@
+services:
+  mc:
+    build:
+      dockerfile: .docker/Dockerfile
+    tty: true
+    stdin_open: true
+    ports:
+      - "25565:25565"
+    environment:
+      OPENAI_API_KEY: $OPENAI_API_KEY
+      TYPE: "FORGE"
+      EULA: "TRUE"
+      ONLINE_MODE: "false"
+      GAMEMODE: "creative"
+    volumes:
+      - ./data:/data
