@@ -98,6 +98,9 @@ export default class EcsStack extends cdk.NestedStack {
         taskDefinition.addContainer('MinecraftServer', {
             // image: ecs.ContainerImage.fromEcrRepository(this.ecrRepository),
             image: ecs.ContainerImage.fromRegistry('itzg/minecraft-server'),
+            environment: {
+                EULA: "TRUE"
+            },
             memoryLimitMiB: 1024,
             cpu: 256,
             logging: ecs.LogDrivers.awsLogs({streamPrefix: 'MinecraftServer'}),
