@@ -43,7 +43,7 @@ export default class EcsStack extends cdk.NestedStack {
             ]
         });
         const launchTemplate = new ec2.LaunchTemplate(this, 'ASGMinecraftServerLaunchTemplate', {
-            instanceType: new ec2.InstanceType('t2.small'),
+            instanceType: new ec2.InstanceType('t2.medium'),
             machineImage: ecs.EcsOptimizedImage.amazonLinux2(),
             userData: ec2.UserData.forLinux(),
             role: instanceRole,
@@ -103,9 +103,11 @@ export default class EcsStack extends cdk.NestedStack {
             image: ecs.ContainerImage.fromRegistry('itzg/minecraft-server'),
             environment: {
                 EULA: "TRUE",
+                ONLINE_MODE: "false",
+                GAMEMODE: "creative"
             },
-            memoryLimitMiB: 2048, // Increased from 1024
-            cpu: 512, // Increased from 256
+            memoryLimitMiB: 2048,
+            cpu: 512,
             logging: ecs.LogDrivers.awsLogs({streamPrefix: 'MinecraftServer'}),
             portMappings: [{
                 containerPort: 25565,

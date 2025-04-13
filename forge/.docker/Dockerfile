@@ -1,5 +1,5 @@
 # Use an official OpenJDK image with Java 21 as the base image
-FROM openjdk:21-jdk-slim
+FROM openjdk:21-jdk-slim AS build
 
 # Set the working directory in the container
 WORKDIR /app
@@ -18,24 +18,15 @@ COPY gradlew ./
 RUN chmod +x ./gradlew
 
 # Copy the source code
-COPY src ./src
-COPY .env ./
+COPY . .
 
 # Build the Forge server and the mod
 RUN ./gradlew build
 
-# Create a directory for the server
-RUN mkdir -p /data
 
-# Expose Minecraft server port
-EXPOSE 25565
+FROM itzg/minecraft-server AS server
+ARG OPENAI_API_KEY
+ENV OPENAI_API_KEY ${OPENAI_API_KEY}
 
-# Set the volume for server data
-VOLUME ["/data"]
-
-# Working directory for server
-WORKDIR /data
-
-# Copy the built mod jar to the server mods directory
-RUN mkdir -p /data/mods && \
-    cp /app/build/libs/*.jar /data/mods/
+# Copy mods from /data/mods in the base image to /mods in the server image
+COPY --from=build /app/build/libs/*.jar /mods/
