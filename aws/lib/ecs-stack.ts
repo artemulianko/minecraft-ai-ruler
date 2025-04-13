@@ -43,7 +43,7 @@ export default class EcsStack extends cdk.NestedStack {
             ]
         });
         const launchTemplate = new ec2.LaunchTemplate(this, 'ASGMinecraftServerLaunchTemplate', {
-            instanceType: new ec2.InstanceType('t2.micro'),
+            instanceType: new ec2.InstanceType('t2.small'),
             machineImage: ecs.EcsOptimizedImage.amazonLinux2(),
             userData: ec2.UserData.forLinux(),
             role: instanceRole,
@@ -63,7 +63,10 @@ export default class EcsStack extends cdk.NestedStack {
 
         this.taskRole = new iam.Role(this, 'EcsStackTaskRole', {
             assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-            description: 'IAM Role for ECS tasks to access ECR',
+            description: 'IAM Role for ECS tasks to access ECR and other AWS services',
+            managedPolicies: [
+                iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy')
+            ]
         });
 
         this.buildMinecraftServerService()
@@ -99,10 +102,10 @@ export default class EcsStack extends cdk.NestedStack {
             // image: ecs.ContainerImage.fromEcrRepository(this.ecrRepository),
             image: ecs.ContainerImage.fromRegistry('itzg/minecraft-server'),
             environment: {
-                EULA: "TRUE"
+                EULA: "TRUE",
             },
-            memoryLimitMiB: 1024,
-            cpu: 256,
+            memoryLimitMiB: 2048, // Increased from 1024
+            cpu: 512, // Increased from 256
             logging: ecs.LogDrivers.awsLogs({streamPrefix: 'MinecraftServer'}),
             portMappings: [{
                 containerPort: 25565,

@@ -11,7 +11,7 @@ export default class VpcStack extends cdk.Stack {
 
         this.vpc = new ec2.Vpc(this, 'MinecraftVPC', {
             maxAzs: 2,
-            natGateways: 0,
+            natGateways: 1,
             ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16'),
             subnetConfiguration: [
                 {
@@ -33,11 +33,15 @@ export default class VpcStack extends cdk.Stack {
             allowAllOutbound: true,
         });
 
-        // Add Minecraft ingress rule
         this.minecraftSG.addIngressRule(
             ec2.Peer.anyIpv4(),
             ec2.Port.tcp(25565),
             'Allow Minecraft access from anywhere'
+        );
+        this.minecraftSG.addIngressRule(
+            ec2.Peer.anyIpv4(),
+            ec2.Port.tcp(22),
+            'Allow SSH access from anywhere'
         );
 
         new cdk.CfnOutput(this, "VpcId", {

@@ -31,33 +31,32 @@ npm run deploy
 
 ## What Gets Deployed
 
-- A VPC with public subnets
+- A VPC with public and private subnets, including a NAT gateway
 - Security group allowing SSH (port 22) and Minecraft (port 25565) traffic
-- EC2 instance (t3.medium) with Amazon Linux 2023
-- User data script that installs Docker and sets up the Minecraft server
+- ECS cluster with t2.small instances running Amazon Linux 2
+- ECS service with a Minecraft server container
+- Network Load Balancer properly configured for TCP traffic on port 25565
 
 ## Post-Deployment Steps
 
-After deployment, you'll need to:
+After deployment:
 
-1. Copy your Minecraft server files (with the AI mod) to the EC2 instance:
+1. The Minecraft server will be automatically deployed and started on ECS.
+
+2. Get the DNS name of the Network Load Balancer from the CloudFormation outputs.
+
+3. Connect to your Minecraft server using the NLB DNS name on port 25565.
+
+4. To access the ECS instance for debugging (if needed):
 
 ```bash
-# Example using scp (replace with your key path and instance IP)
-scp -i "minecraft-server-key.pem" -r /path/to/your/forge-server ec2-user@<instance-ip>:/home/ec2-user/minecraft-server/
-```
+# Find the instance ID running your ECS task
+aws ecs list-container-instances --cluster <your-cluster-name>
 
-2. SSH into the instance:
-
-```bash
+# Connect to the instance 
+aws ssm start-session --target <instance-id>
+# OR
 ssh -i "minecraft-server-key.pem" ec2-user@<instance-ip>
-```
-
-3. Build and start the Docker container:
-
-```bash
-cd /home/ec2-user/minecraft-server
-docker-compose up -d
 ```
 
 ## Cleanup
@@ -72,6 +71,14 @@ npm run destroy
 
 To modify the server configuration:
 
-- Change instance type in `lib/minecraft-server-stack.ts`
-- Adjust Docker settings in the UserData script
-- Modify Minecraft server settings in your forge-server files before copying them to the EC2 instance
+- Change instance type in `lib/ecs-stack.ts`
+- Adjust container settings in `lib/ecs-stack.ts`
+- Add additional environment variables for the Minecraft server in the container definition
+- For advanced Minecraft configuration, you can customize the container image or create a custom one based on `itzg/minecraft-server`
+
+## Security Considerations
+
+- The security group is configured to allow connections from any IP address. For production use, consider restricting this to known IP ranges.
+- SSH access is open to all IPs. For production use, restrict this to your trusted IP addresses.
+- Consider enabling AWS WAF for additional protection against common attacks.
+- The ECS task has appropriate IAM permissions with least privilege.

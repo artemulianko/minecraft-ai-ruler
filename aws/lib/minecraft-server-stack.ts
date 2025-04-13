@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import {Construct} from "constructs";
 import EcsStack from "./ecs-stack";
-import AlbStack from "./alb-stack";
+import NlbStack from "./nlb-stack"; // File still named alb-stack.ts but exports NlbStack
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 
@@ -24,10 +24,9 @@ export default class MinecraftServerStack extends cdk.Stack {
             subnets: privateSubnets,
         })
 
-        new AlbStack(this, {
+        new NlbStack(this, {
             vpc,
             publicSubnets,
-            securityGroup: minecraftServerSg,
             ecsService: ecsStack.minecraftServerService,
         })
     }
