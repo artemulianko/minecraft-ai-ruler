@@ -1,13 +1,11 @@
-# Use an official OpenJDK image with Java 21 as the base image
-FROM openjdk:21-jdk-slim AS build
+FROM amazoncorretto:21-alpine AS build
 
 # Set the working directory in the container
 WORKDIR /app
 
 # Install required tools
-RUN apt-get update && \
-    apt-get install -y wget unzip git && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk update && \
+    apk add --no-cache wget unzip git
 
 # Copy the Gradle files
 COPY build.gradle settings.gradle gradle.properties ./

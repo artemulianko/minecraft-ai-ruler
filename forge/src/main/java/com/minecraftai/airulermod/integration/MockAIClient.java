@@ -5,7 +5,7 @@ import com.minecraftai.airulermod.actions.SendMessage;
 import com.minecraftai.airulermod.actions.SpawnBlock;
 import jakarta.inject.Singleton;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Map;
 

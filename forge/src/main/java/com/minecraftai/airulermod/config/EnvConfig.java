@@ -3,7 +3,7 @@ package com.minecraftai.airulermod.config;
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.inject.Singleton;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @Singleton
 public class EnvConfig {
