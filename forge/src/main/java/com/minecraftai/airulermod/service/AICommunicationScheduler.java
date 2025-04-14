@@ -61,7 +61,7 @@ public class AICommunicationScheduler {
     public void stop() {
         LOGGER.info("Stopping AI communication scheduler");
 
-        timer.cancel();
+        if (timer != null) timer.cancel();
     }
 
     private void communicate() {

@@ -1,8 +1,11 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
+    id 'com.gradleup.shadow' version "9.0.0-beta12"
 }
 
 version = mod_version
@@ -10,6 +13,11 @@ group = mod_group_id
 
 base {
     archivesName = mod_id
+}
+
+configurations {
+    shadow // Create a shadow configuration
+    implementation.extendsFrom shadow // Make implementation extend from shadow
 }
 
 // Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
@@ -119,6 +127,14 @@ repositories {
     // }
 }
 
+configurations {
+    // Create shadow configuration
+    shadow
+
+    // Make shadow include everything from minecraftLibrary
+    shadow.extendsFrom minecraftLibrary
+}
+
 dependencies {
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
@@ -127,14 +143,14 @@ dependencies {
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     // DI
-    implementation 'com.google.dagger:dagger:2.56.1'
+    shadow 'com.google.dagger:dagger:2.56.1'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.56.1'
     // Serialization
-    implementation 'com.google.code.gson:gson:2.12.1'
+    shadow 'com.google.code.gson:gson:2.12.1'
     // HTTP Client
-    implementation "com.squareup.okhttp3:okhttp:4.12.0"
+    shadow "com.squareup.okhttp3:okhttp:4.12.0"
     // DotEnv
-    implementation 'io.github.cdimascio:dotenv-java:3.2.0'
+    shadow 'io.github.cdimascio:dotenv-java:3.2.0'
 
     // Example mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -228,4 +244,34 @@ sourceSets.each {
     def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
     it.output.resourcesDir = dir
     it.java.destinationDirectory = dir
+}
+
+tasks.named('shadowJar', ShadowJar) {
+    archiveBaseName = mod_id
+    archiveClassifier = ''
+    archiveVersion = ''
+    zip64 = true
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    // 1. Include your compiled mod classes and resources
+    from sourceSets.main.output
+
+    // 2. Include generated classes (like Dagger)
+    from "${layout.buildDirectory.get()}/generated/sources/annotationProcessor/java/main"
+
+    configurations = [project.configurations.shadow]
+    mergeServiceFiles()
+
+    relocate 'dagger', 'com.minecraftai.shadowed.dagger'
+    relocate 'com.google', 'com.minecraftai.shadowed.com.google'
+    relocate 'okhttp3', 'com.minecraftai.shadowed.okhttp3'
+    relocate 'io.github.cdimascio', 'com.minecraftai.shadowed.io.github.cdimascio'
+    relocate 'org.spongepowered', 'com.minecraftai.shadowed.org.spongepowered'
+}
+
+build.dependsOn shadowJar
+//
+reobf {
+    shadowJar {
+
+    }
 }
