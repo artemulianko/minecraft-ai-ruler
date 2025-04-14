@@ -4,7 +4,7 @@ import com.minecraftai.airulermod.constants.Prompts;
 import com.minecraftai.airulermod.di.ServerHolder;
 import com.minecraftai.airulermod.events.*;
 import com.minecraftai.airulermod.integration.AIClient;
-import com.minecraftai.airulermod.di.AIClientHolder;
+import com.minecraftai.airulermod.integration.AIClientManager;
 import com.minecraftai.airulermod.service.*;
 import jakarta.inject.Inject;
 import net.minecraftforge.event.ServerChatEvent;
@@ -47,14 +47,14 @@ public class ServerEventsHandler {
             ActionsProcessor actionsProcessor,
             EventTracker eventTracker,
             StatsTracker statsService,
-            AIClientHolder aiClientHolder,
+            AIClientManager aiClientManager,
             AICommunicationScheduler aiCommunicationScheduler
     ) {
         this.serverHolder = serverHolder;
         this.actionsProcessor = actionsProcessor;
         this.eventTracker = eventTracker;
         this.statsService = statsService;
-        this.aiClient = aiClientHolder.getAiClient();
+        this.aiClient = aiClientManager.getAiClient();
         this.aiCommunicationScheduler = aiCommunicationScheduler;
     }
 
