@@ -5,7 +5,7 @@ import com.minecraftai.airulermod.actions.AbstractAction;
 import com.minecraftai.airulermod.di.ServerHolder;
 import com.minecraftai.airulermod.events.AbstractGameEvent;
 import com.minecraftai.airulermod.integration.AIClient;
-import com.minecraftai.airulermod.di.AIClientHolder;
+import com.minecraftai.airulermod.integration.AIClientManager;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import net.minecraft.core.Position;
@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -51,12 +50,12 @@ public class EventsActionProcessor {
     
     @Inject
     public EventsActionProcessor(
-            AIClientHolder aiClientHolder,
+            AIClientManager aiClientManager,
             ServerHolder serverHolder,
             Gson serializer,
             ActionsParser actionsParser
     ) {
-        this.aiClient = aiClientHolder.getAiClient();
+        this.aiClient = aiClientManager.getAiClient();
         this.serverHolder = serverHolder;
         this.serializer = serializer;
         this.actionsParser = actionsParser;

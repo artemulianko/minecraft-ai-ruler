@@ -5,6 +5,8 @@ import com.minecraftai.airulermod.integration.*;
 import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
+import dagger.multibindings.IntoMap;
+import dagger.multibindings.StringKey;
 import jakarta.inject.Singleton;
 
 @Module
@@ -18,13 +20,13 @@ public class AppModule {
     @Module
     public abstract static class Bind {
         @Binds
-        @Singleton
-        @AIImplementation(AIType.OPENAI)
+        @IntoMap
+        @StringKey("OPENAI")
         public abstract AIClient provideOpenAIClient(OpenAIClient openAIClient);
 
         @Binds
-        @Singleton
-        @AIImplementation(AIType.MOCK)
+        @IntoMap()
+        @StringKey("MOCK")
         public abstract AIClient provideMockAIClient(MockAIClient mockAIClient);
     }
 }
