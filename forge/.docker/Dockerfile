@@ -27,4 +27,4 @@ ARG OPENAI_API_KEY
 ENV OPENAI_API_KEY ${OPENAI_API_KEY}
 
 # Copy mods from /data/mods in the base image to /mods in the server image
-COPY --from=build /app/build/libs/*.jar /mods/
+COPY --from=build /app/build/libs/airulermod.jar /mods/
