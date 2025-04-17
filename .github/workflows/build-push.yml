@@ -1,5 +1,5 @@
 name: Build and push server image to AWS ECR
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+run-name: Build and deploy server image 🚀
 on:
   push:
     branches:
@@ -62,9 +62,9 @@ jobs:
         run: |
           cd ./forge # Navigate to context
           echo "Building Docker image..."
-          docker build -f .docker/Dockerfile -t 112372363283.dkr.ecr.eu-central-1.amazonaws.com/minecraft-ai-server-repo:latest .
+          docker build --target server -f .docker/Dockerfile -t ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPO }}:latest .
           echo "Pushing Docker image to Amazon ECR..."
-          docker push 112372363283.dkr.ecr.eu-central-1.amazonaws.com/minecraft-ai-server-repo:latest
+          docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPO }}:latest
 
       - name: Complete Build Process
         run: echo "🚀 Success"
