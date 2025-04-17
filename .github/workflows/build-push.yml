@@ -62,7 +62,7 @@ jobs:
         run: |
           cd ./forge # Navigate to context
           echo "Building Docker image..."
-          docker build -t 112372363283.dkr.ecr.eu-central-1.amazonaws.com/minecraft-ai-server-repo:latest .
+          docker build -f .docker/Dockerfile -t 112372363283.dkr.ecr.eu-central-1.amazonaws.com/minecraft-ai-server-repo:latest .
           echo "Pushing Docker image to Amazon ECR..."
           docker push 112372363283.dkr.ecr.eu-central-1.amazonaws.com/minecraft-ai-server-repo:latest
 
