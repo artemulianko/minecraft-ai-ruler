@@ -29,7 +29,7 @@ jobs:
         with:
           role-session-name: github-pipeline
           role-to-assume: ${{ secrets.PIPELINE_ROLE }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       # Step 3: Confirm AWS CLI is installed (Optional verification step)
       - name: Verify AWS CLI Installation
