@@ -20,33 +20,12 @@ export default class EcrStack extends cdk.Stack {
             ]
         });
 
-        const ecrAccessPolicy = new iam.PolicyStatement({
-            effect: iam.Effect.ALLOW,
-            actions: [
-                'ecr:GetDownloadUrlForLayer',
-                'ecr:BatchGetImage',
-                'ecr:BatchCheckLayerAvailability',
-                'ecr:PutImage',
-                'ecr:InitiateLayerUpload',
-                'ecr:UploadLayerPart',
-                'ecr:CompleteLayerUpload',
-                'ecr:ListImages',
-                'ecr:DescribeRepositories',
-                'ecr:GetRepositoryPolicy',
-                'ecr:TagResource',
-                'ecr:UntagResource',
-                'ecr:DeleteRepository',
-                'ecr:DeleteRepositoryPolicy',
-                'ecr:GetAuthorizationToken'
-            ],
-            resources: [this.repository.repositoryArn]
-        });
-
         const ecrAccessUser = new iam.User(this, 'EcrAccessUser', {
             userName: 'EcrAccessUser',
+            managedPolicies: [
+                iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryFullAccess')
+            ]
         });
-
-        ecrAccessUser.addToPolicy(ecrAccessPolicy);
 
         // Output the IAM user name
         new cdk.CfnOutput(this, 'EcrAccessUserName', {
