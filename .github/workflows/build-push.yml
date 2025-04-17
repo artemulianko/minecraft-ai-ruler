@@ -62,9 +62,9 @@ jobs:
         run: |
           cd ./forge # Navigate to context
           echo "Building Docker image..."
-          docker build -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.ECR_REPO }}:${{ inputs.tag }} -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.ECR_REPO }}:latest .
+          docker build -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.ECR_REPO }}:latest .
           echo "Pushing Docker image to Amazon ECR..."
-          docker push ${{ secrets.ECR_REGISTRY }}/${{ inputs.ECR_REPO }}:${{ inputs.tag }} && docker push ${{ secrets.ECR_REGISTRY }}/${{ inputs.ECR_REPO }}:latest
+          docker push ${{ secrets.ECR_REGISTRY }}/${{ inputs.ECR_REPO }}:latest
 
       - name: Complete Build Process
         run: echo "🚀 Success"
