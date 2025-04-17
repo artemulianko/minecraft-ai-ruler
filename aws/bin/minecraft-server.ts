@@ -4,11 +4,13 @@ import * as cdk from 'aws-cdk-lib';
 import MinecraftServerStack from '../lib/minecraft-server-stack';
 import VpcStack from "../lib/vpc-stack";
 import EcrStack from "../lib/ecr-stack";
+import OidcStack from "../lib/oidc-stack";
 
 const app = new cdk.App();
 
 const vpcStack = new VpcStack(app);
 const ecrStack = new EcrStack(app);
+const oidcStack = new OidcStack(app);
 
 new MinecraftServerStack(app, {
   vpc: vpcStack.vpc,

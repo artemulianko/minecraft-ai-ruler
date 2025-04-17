@@ -99,8 +99,8 @@ export default class EcsStack extends cdk.NestedStack {
         });
 
         taskDefinition.addContainer('MinecraftServer', {
-            // image: ecs.ContainerImage.fromEcrRepository(this.ecrRepository),
-            image: ecs.ContainerImage.fromRegistry('itzg/minecraft-server'),
+            image: ecs.ContainerImage.fromEcrRepository(this.ecrRepository),
+            // image: ecs.ContainerImage.fromRegistry('itzg/minecraft-server'),
             environment: {
                 EULA: "TRUE",
                 ONLINE_MODE: "false",
