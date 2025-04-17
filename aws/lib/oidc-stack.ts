@@ -19,8 +19,10 @@ export default class OidcStack extends cdk.Stack {
                 this.gitHubOidcProvider.openIdConnectProviderArn,
                 {
                     'StringEquals': {
-                        'token.actions.githubusercontent.com:sub': 'repo:artemulyanko/minecraft-ai-ruler:*',
                         'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
+                    },
+                    'StringLike': {
+                        'token.actions.githubusercontent.com:sub': 'repo:artemulyanko/minecraft-ai-ruler:*'
                     },
                 },
                 'sts:AssumeRoleWithWebIdentity'
