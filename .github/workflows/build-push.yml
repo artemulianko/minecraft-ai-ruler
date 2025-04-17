@@ -55,16 +55,16 @@ jobs:
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region $AWS_REGION | \
-          docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+          docker login --username AWS --password-stdin 112372363283.dkr.ecr.eu-central-1.amazonaws.com
 
         # Step 5: Build and push Docker image
       - name: Build and push Docker image
         run: |
           cd ./forge # Navigate to context
           echo "Building Docker image..."
-          docker build -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.ECR_REPO }}:latest .
+          docker build -t 112372363283.dkr.ecr.eu-central-1.amazonaws.com/minecraft-ai-server-repo:latest .
           echo "Pushing Docker image to Amazon ECR..."
-          docker push ${{ secrets.ECR_REGISTRY }}/${{ inputs.ECR_REPO }}:latest
+          docker push 112372363283.dkr.ecr.eu-central-1.amazonaws.com/minecraft-ai-server-repo:latest
 
       - name: Complete Build Process
         run: echo "🚀 Success"
