@@ -36,7 +36,8 @@ export default class EcrStack extends cdk.Stack {
                 'ecr:TagResource',
                 'ecr:UntagResource',
                 'ecr:DeleteRepository',
-                'ecr:DeleteRepositoryPolicy'
+                'ecr:DeleteRepositoryPolicy',
+                'ecr:GetAuthorizationToken'
             ],
             resources: [this.repository.repositoryArn]
         });
