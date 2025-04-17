@@ -1,6 +1,9 @@
 name: Build and push server image to AWS ECR
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on:
+  push:
+    branches:
+      - 'feature/deployment'
   workflow_dispatch:
     inputs:
       tag:
