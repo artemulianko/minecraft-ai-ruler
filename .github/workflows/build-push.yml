@@ -1,6 +1,9 @@
 name: Build and push server image to AWS ECR
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [tag]
+on:
+  push:
+    tags:
+      - '*'
 jobs:
   build:
     runs-on: ubuntu-latest
