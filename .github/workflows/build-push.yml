@@ -27,9 +27,8 @@ jobs:
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
-          audience: 'sts.amazonaws.com'
           role-to-assume: ${{ secrets.PIPELINE_ROLE }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: eu-central-1
 
       # Step 3: Confirm AWS Role assume
       - name: Sts GetCallerIdentity
