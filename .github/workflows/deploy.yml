@@ -1,4 +1,4 @@
-name: Deploy server
+name: Deploy Server
 run-name: Deploy latest version of server
 on:
   workflow_dispatch:

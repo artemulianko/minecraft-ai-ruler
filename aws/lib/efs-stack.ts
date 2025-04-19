@@ -28,6 +28,7 @@ export default class EfsStack extends cdk.Stack {
         this.fileSystem = new efs.FileSystem(this, 'ServerEfs', {
             vpc,
             securityGroup,
+            oneZone: true,
             performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
             removalPolicy: RemovalPolicy.DESTROY,
         });

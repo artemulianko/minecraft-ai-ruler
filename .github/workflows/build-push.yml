@@ -1,4 +1,4 @@
-name: Build and push server image to AWS ECR
+name: Build & Push Server Image
 run-name: Build and push server image to ECR
 on: [workflow_dispatch]
 

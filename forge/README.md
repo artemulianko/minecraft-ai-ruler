@@ -1,11 +1,13 @@
+[Original README](README.txt)
+
 # Running Minecraft Development Environment
 
 Here's how to set up and run your Minecraft development environment:
 
 ## Prerequisites
 
-1. Create a `.env` file in your project root directory. Just copy from .env.dist
-2. Set `OPENAI_API_KEY` value
+1. `cp .env.dist .env`
+2. Set `AI_CLIENT` and `OPENAI_API_KEY` values
 
 ## Running Different Components
 
