@@ -8,7 +8,7 @@ interface EfsStackProps {
     vpc: ec2.IVpc;
 }
 
-export default class EfsStack extends cdk.Stack {
+export default class EfsStack extends cdk.NestedStack {
     public readonly fileSystem: efs.FileSystem;
 
     constructor(scope: Construct, {vpc}: EfsStackProps) {
