@@ -19,28 +19,20 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout your repository
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Step 2: Assume pipeline role
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
           role-to-assume: ${{ vars.PIPELINE_ROLE }}
-          aws-region: eu-central-1
+          aws-region: ${{ vars.AWS_REGION }}
 
-      # Step 3: Confirm AWS Role assume
-      - name: Sts GetCallerIdentity
-        run: aws sts get-caller-identity
-
-        # Step 4: Login to AWS ECR
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region $AWS_REGION | \
           docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY }}
 
-        # Step 5: Build and push Docker image
       - name: Build and push Docker image
         run: |
           cd ./forge # Navigate to context

@@ -22,7 +22,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
           role-to-assume: ${{ vars.PIPELINE_ROLE }}
-          aws-region: eu-central-1
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Get current task definition
         id: get-task-def
