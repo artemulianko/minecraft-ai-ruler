@@ -1,5 +1,5 @@
 name: Build and push server image to AWS ECR
-run-name: Build and deploy server image 🚀
+run-name: Build and push server image to ECR
 on:
   push:
     branches:
