@@ -4,37 +4,41 @@ import {Compatibility} from 'aws-cdk-lib/aws-ecs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam'
 import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as efs from 'aws-cdk-lib/aws-efs';
 import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
 import {Construct} from "constructs";
+import {EcsVolume, EfsVolume} from "aws-cdk-lib/aws-batch";
 
 interface EcsStackProps {
     vpc: ec2.IVpc,
-    subnets: ec2.ISubnet[];
+    publicSubnets: ec2.ISubnet[];
     ecrRepository: ecr.IRepository;
     securityGroup: ec2.ISecurityGroup;
+    fileSystem: efs.FileSystem;
 }
 
-export default class EcsStack extends cdk.NestedStack {
+export default class EcsStack extends cdk.Stack {
     public minecraftServerService: ecs.Ec2Service;
 
     private readonly cluster: ecs.Cluster;
     private readonly taskRole: iam.IRole;
 
-    private readonly subnets: ec2.ISubnet[];
+    private readonly publicSubnets: ec2.ISubnet[];
     private readonly ecrRepository: ecr.IRepository;
-    private readonly securityGroup: ec2.ISecurityGroup;
+    private readonly fileSystem: efs.FileSystem;
 
     constructor(scope: Construct, {
         vpc,
-        subnets,
+        fileSystem,
+        publicSubnets,
         ecrRepository,
         securityGroup
     }: EcsStackProps) {
         super(scope, 'EcsStack');
 
-        this.subnets = subnets;
+        this.fileSystem = fileSystem;
+        this.publicSubnets = publicSubnets;
         this.ecrRepository = ecrRepository;
-        this.securityGroup = securityGroup;
 
         const instanceRole = new iam.Role(this, 'InstanceRole', {
             assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
@@ -43,7 +47,8 @@ export default class EcsStack extends cdk.NestedStack {
             ]
         });
         const launchTemplate = new ec2.LaunchTemplate(this, 'ASGMinecraftServerLaunchTemplate', {
-            instanceType: new ec2.InstanceType('t2.medium'),
+            securityGroup,
+            instanceType: new ec2.InstanceType('t3.small'),
             machineImage: ecs.EcsOptimizedImage.amazonLinux2(),
             userData: ec2.UserData.forLinux(),
             role: instanceRole,
@@ -51,9 +56,10 @@ export default class EcsStack extends cdk.NestedStack {
         const autoScalingGroup = new autoscaling.AutoScalingGroup(this, 'ASGMinecraftServer', {
             vpc,
             launchTemplate,
-            desiredCapacity: 1 // Important to have 1
+            vpcSubnets: {subnets: this.publicSubnets},
         });
-        const capacityProvider = new ecs.AsgCapacityProvider(this, 'AsgCapacityProvider', {
+        const capacityProvider = new ecs.AsgCapacityProvider(this, 'ASGCapacityProvider', {
+            capacityProviderName: 'ASGCapacityProvider',
             autoScalingGroup,
             machineImageType: ecs.MachineImageType.AMAZON_LINUX_2,
         });
@@ -92,13 +98,20 @@ export default class EcsStack extends cdk.NestedStack {
      * @return {void} This method does not return a value. It initializes and sets up the ECS service.
      */
     private buildMinecraftServerService(): void {
+        const serverVolumeName = 'ServerVolume';
         const taskDefinition = new ecs.TaskDefinition(this, 'MinecraftServerTaskDefinition', {
             compatibility: Compatibility.EC2,
-            networkMode: ecs.NetworkMode.AWS_VPC,
-            taskRole: this.taskRole
+            networkMode: ecs.NetworkMode.BRIDGE,
+            taskRole: this.taskRole,
         });
+        taskDefinition.addVolume({
+            name: serverVolumeName,
+            efsVolumeConfiguration: {
+                fileSystemId: this.fileSystem.fileSystemId,
+            }
+        })
 
-        taskDefinition.addContainer('MinecraftServer', {
+        const container = taskDefinition.addContainer('MinecraftServer', {
             image: ecs.ContainerImage.fromEcrRepository(this.ecrRepository),
             // image: ecs.ContainerImage.fromRegistry('itzg/minecraft-server'),
             environment: {
@@ -107,21 +120,23 @@ export default class EcsStack extends cdk.NestedStack {
                 GAMEMODE: "creative"
             },
             memoryLimitMiB: 2048,
-            cpu: 512,
+            cpu: 1024,
             logging: ecs.LogDrivers.awsLogs({streamPrefix: 'MinecraftServer'}),
             portMappings: [{
                 containerPort: 25565,
                 hostPort: 25565
             }]
-        })
+        });
+        container.addMountPoints({
+                sourceVolume: serverVolumeName,
+                containerPath: '/data',
+                readOnly: false,
+            }
+        )
 
         this.minecraftServerService = new ecs.Ec2Service(this, 'MinecraftServerService', {
             cluster: this.cluster,
             taskDefinition,
-            // Open minecraft server port
-            securityGroups: [this.securityGroup],
-            // Put into private subnet
-            vpcSubnets: {subnets: this.subnets},
             desiredCount: 1
         })
     }

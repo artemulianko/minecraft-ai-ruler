@@ -1,21 +1,23 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import MinecraftServerStack from '../lib/minecraft-server-stack';
 import VpcStack from "../lib/vpc-stack";
 import EcrStack from "../lib/ecr-stack";
 import OidcStack from "../lib/oidc-stack";
+import EcsStack from "../lib/ecs-stack";
+import EfsStack from "../lib/efs-stack";
 
 const app = new cdk.App();
 
+new OidcStack(app);
 const vpcStack = new VpcStack(app);
 const ecrStack = new EcrStack(app);
-const oidcStack = new OidcStack(app);
+const efsStack = new EfsStack(app, {vpc: vpcStack.vpc});
 
-new MinecraftServerStack(app, {
+new EcsStack(app, {
   vpc: vpcStack.vpc,
-  privateSubnets: vpcStack.vpc.privateSubnets,
+  fileSystem: efsStack.fileSystem,
   publicSubnets: vpcStack.vpc.publicSubnets,
-  minecraftServerSg: vpcStack.minecraftSG,
   ecrRepository: ecrStack.repository,
-});
+  securityGroup: vpcStack.minecraftSG,
+})

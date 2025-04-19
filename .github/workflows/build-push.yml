@@ -27,7 +27,7 @@ jobs:
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
-          role-to-assume: ${{ secrets.PIPELINE_ROLE }}
+          role-to-assume: ${{ vars.PIPELINE_ROLE }}
           aws-region: eu-central-1
 
       # Step 3: Confirm AWS Role assume
@@ -38,16 +38,16 @@ jobs:
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region $AWS_REGION | \
-          docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+          docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY }}
 
         # Step 5: Build and push Docker image
       - name: Build and push Docker image
         run: |
           cd ./forge # Navigate to context
           echo "Building Docker image..."
-          docker build --target server -f .docker/Dockerfile -t ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPO }}:latest .
+          docker build --target server -f .docker/Dockerfile -t ${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPO }}:latest .
           echo "Pushing Docker image to Amazon ECR..."
-          docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPO }}:latest
+          docker push ${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPO }}:latest
 
       - name: Complete Build Process
         run: echo "🚀 Success"
