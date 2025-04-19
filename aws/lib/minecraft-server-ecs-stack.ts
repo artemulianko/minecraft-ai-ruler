@@ -48,7 +48,7 @@ export default class MinecraftServerEcsStack extends cdk.Stack {
         ecrRepository,
         secret,
     }: EcsStackProps) {
-        super(scope, 'EcsStack');
+        super(scope, 'MinecraftServerEcsStack');
 
         this.secret = secret;
         this.fileSystem = fileSystem;

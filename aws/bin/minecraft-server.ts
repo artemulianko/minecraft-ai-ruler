@@ -3,16 +3,20 @@ import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import MinecraftServerEcsStack from "../lib/minecraft-server-ecs-stack";
 import BaselineStack from "../lib/baseline-stack";
+import EfsStack from "../lib/efs-stack";
 
 const app = new cdk.App();
 
-// Persistent data stack
+// Baseline stack
 const baselineStack = new BaselineStack(app);
 
-// Workload stack
+// Persistent data stack
+const efsStack = new EfsStack(app, {vpc: baselineStack.vpc});
+
+// Workloads stack
 new MinecraftServerEcsStack(app, {
-  vpc: baselineStack.vpc,
-  fileSystem: baselineStack.fileSystem,
-  ecrRepository: baselineStack.ecrRepository,
-  secret: baselineStack.secret,
+    vpc: baselineStack.vpc,
+    fileSystem: efsStack.fileSystem,
+    ecrRepository: baselineStack.ecrRepository,
+    secret: baselineStack.secret,
 })

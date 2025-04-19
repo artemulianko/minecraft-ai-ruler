@@ -1,15 +1,6 @@
 name: Build and push server image to AWS ECR
 run-name: Build and push server image to ECR
-on:
-  push:
-    branches:
-      - 'feature/deployment'
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag for the Docker image'
-        required: true
-        default: 'latest-manual'
+on: [workflow_dispatch]
 
 jobs:
   build:

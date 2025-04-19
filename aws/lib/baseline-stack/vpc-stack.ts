@@ -9,7 +9,7 @@ export default class VpcStack extends cdk.NestedStack {
         super(scope, 'VpcStack');
 
         this.vpc = new ec2.Vpc(this, 'MinecraftVPC', {
-            maxAzs: 1,
+            maxAzs: 2,
             subnetConfiguration: [
                 {
                     cidrMask: 24,
