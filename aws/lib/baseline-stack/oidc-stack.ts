@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import {Construct} from "constructs";
 
-export default class OidcStack extends cdk.Stack {
+export default class OidcStack extends cdk.NestedStack {
     public readonly gitHubOidcProvider: iam.OpenIdConnectProvider;
 
     constructor(scope: Construct) {

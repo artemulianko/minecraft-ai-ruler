@@ -1,23 +1,18 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import VpcStack from "../lib/vpc-stack";
-import EcrStack from "../lib/ecr-stack";
-import OidcStack from "../lib/oidc-stack";
-import EcsStack from "../lib/ecs-stack";
-import EfsStack from "../lib/efs-stack";
+import MinecraftServerEcsStack from "../lib/minecraft-server-ecs-stack";
+import BaselineStack from "../lib/baseline-stack";
 
 const app = new cdk.App();
 
-new OidcStack(app);
-const vpcStack = new VpcStack(app);
-const ecrStack = new EcrStack(app);
-const efsStack = new EfsStack(app, {vpc: vpcStack.vpc});
+// Persistent data stack
+const baselineStack = new BaselineStack(app);
 
-new EcsStack(app, {
-  vpc: vpcStack.vpc,
-  fileSystem: efsStack.fileSystem,
-  publicSubnets: vpcStack.vpc.publicSubnets,
-  ecrRepository: ecrStack.repository,
-  securityGroup: vpcStack.minecraftSG,
+// Workload stack
+new MinecraftServerEcsStack(app, {
+  vpc: baselineStack.vpc,
+  fileSystem: baselineStack.fileSystem,
+  ecrRepository: baselineStack.ecrRepository,
+  secret: baselineStack.secret,
 })

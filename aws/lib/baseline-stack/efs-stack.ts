@@ -14,9 +14,20 @@ export default class EfsStack extends cdk.Stack {
     constructor(scope: Construct, {vpc}: EfsStackProps) {
         super(scope, 'EfsStack');
 
+        const securityGroup = new ec2.SecurityGroup(this, 'EFSSecurityGroup', {
+            vpc,
+            allowAllOutbound: true,
+            description: 'Security group for EFS allowing NFS access',
+        });
+        securityGroup.addIngressRule(
+            ec2.Peer.ipv4(vpc.vpcCidrBlock),
+            ec2.Port.NFS,
+            'Allow NFS access in VPC'
+        );
+
         this.fileSystem = new efs.FileSystem(this, 'ServerEfs', {
             vpc,
-            oneZone: true,
+            securityGroup,
             performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
             removalPolicy: RemovalPolicy.DESTROY,
         });

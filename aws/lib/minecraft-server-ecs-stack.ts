@@ -5,20 +5,34 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam'
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as efs from 'aws-cdk-lib/aws-efs';
+import * as sm from 'aws-cdk-lib/aws-secretsmanager';
 import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
 import {Construct} from "constructs";
-import {EcsVolume, EfsVolume} from "aws-cdk-lib/aws-batch";
 
 interface EcsStackProps {
     vpc: ec2.IVpc,
-    publicSubnets: ec2.ISubnet[];
     ecrRepository: ecr.IRepository;
-    securityGroup: ec2.ISecurityGroup;
     fileSystem: efs.FileSystem;
+    secret: sm.Secret;
 }
 
-export default class EcsStack extends cdk.Stack {
-    public minecraftServerService: ecs.Ec2Service;
+/**
+ * Represents an AWS CDK stack for deploying a Minecraft server on ECS using EC2 instances.
+ * This stack provisions resources such as an appropriate ECS cluster, task definition, Elastic File System (EFS),
+ * and other infrastructure necessary to run a Minecraft server.
+ *
+ * The stack integrates AWS-managed services like Secrets Manager, Elastic Container Repository (ECR),
+ * Auto Scaling Groups, and Security Groups to ensure a secure and flexible deployment environment.
+ *
+ * Key Features:
+ * - Provisions an ECS cluster with a capacity provider backed by an auto-scaling EC2 Auto Scaling Group.
+ * - Creates a task definition and ECS service specifically designed to run a Minecraft server container.
+ * - Configures file storage through EFS for persistent server data.
+ * - Associates an IAM role for task execution permissions, including accessing Secrets Manager and ECR.
+ * - Exposes public subnets for server accessibility and configures security groups for Minecraft traffic.
+ */
+export default class MinecraftServerEcsStack extends cdk.Stack {
+    private minecraftServerService: ecs.Ec2Service;
 
     private readonly cluster: ecs.Cluster;
     private readonly taskRole: iam.IRole;
@@ -26,38 +40,59 @@ export default class EcsStack extends cdk.Stack {
     private readonly publicSubnets: ec2.ISubnet[];
     private readonly ecrRepository: ecr.IRepository;
     private readonly fileSystem: efs.FileSystem;
+    private readonly secret: sm.Secret;
 
     constructor(scope: Construct, {
         vpc,
         fileSystem,
-        publicSubnets,
         ecrRepository,
-        securityGroup
+        secret,
     }: EcsStackProps) {
         super(scope, 'EcsStack');
 
+        this.secret = secret;
         this.fileSystem = fileSystem;
-        this.publicSubnets = publicSubnets;
+        this.publicSubnets = vpc.publicSubnets;
         this.ecrRepository = ecrRepository;
 
         const instanceRole = new iam.Role(this, 'InstanceRole', {
             assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
             managedPolicies: [
-                iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonEC2ContainerServiceforEC2Role')
+                iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonEC2ContainerServiceforEC2Role'),
+                iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonElasticFileSystemClientReadWriteAccess')
             ]
         });
+        instanceRole.addToPolicy(new iam.PolicyStatement({
+            actions: ['secretsmanager:GetSecretValue'],
+            resources: [secret.secretArn],
+        }));
+
+        const serverSg = new ec2.SecurityGroup(this, 'MinecraftSecurityGroup', {
+            vpc,
+            description: 'Allow Minecraft (25565) traffic',
+            allowAllOutbound: true,
+        });
+        serverSg.addIngressRule(
+            ec2.Peer.anyIpv4(),
+            ec2.Port.tcp(25565),
+            'Allow Minecraft access from anywhere'
+        );
+
+
         const launchTemplate = new ec2.LaunchTemplate(this, 'ASGMinecraftServerLaunchTemplate', {
-            securityGroup,
+            securityGroup: serverSg,
             instanceType: new ec2.InstanceType('t3.small'),
             machineImage: ecs.EcsOptimizedImage.amazonLinux2(),
             userData: ec2.UserData.forLinux(),
             role: instanceRole,
         });
+
         const autoScalingGroup = new autoscaling.AutoScalingGroup(this, 'ASGMinecraftServer', {
             vpc,
             launchTemplate,
             vpcSubnets: {subnets: this.publicSubnets},
         });
+
         const capacityProvider = new ecs.AsgCapacityProvider(this, 'ASGCapacityProvider', {
             capacityProviderName: 'ASGCapacityProvider',
             autoScalingGroup,
@@ -90,13 +125,6 @@ export default class EcsStack extends cdk.Stack {
         });
     }
 
-    /**
-     * Builds and configures the Minecraft server service within an ECS cluster.
-     * This method creates a task definition, adds a container for the Minecraft server,
-     * and sets up an ECS service with specified security groups, subnets, and desired count.
-     *
-     * @return {void} This method does not return a value. It initializes and sets up the ECS service.
-     */
     private buildMinecraftServerService(): void {
         const serverVolumeName = 'ServerVolume';
         const taskDefinition = new ecs.TaskDefinition(this, 'MinecraftServerTaskDefinition', {
@@ -117,9 +145,13 @@ export default class EcsStack extends cdk.Stack {
             environment: {
                 EULA: "TRUE",
                 ONLINE_MODE: "false",
-                GAMEMODE: "creative"
+                GAMEMODE: "creative",
+                MEMORY: '1G',
             },
-            memoryLimitMiB: 2048,
+            secrets: {
+                OPENAI_API_KEY: ecs.Secret.fromSecretsManager(this.secret, 'openai-api-key'),
+            },
+            memoryLimitMiB: 1024,
             cpu: 1024,
             logging: ecs.LogDrivers.awsLogs({streamPrefix: 'MinecraftServer'}),
             portMappings: [{
