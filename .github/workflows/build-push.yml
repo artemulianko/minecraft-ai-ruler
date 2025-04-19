@@ -1,0 +1,36 @@
+name: Build and push server image to AWS ECR
+run-name: Build and push server image to ECR
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    permissions:
+      id-token: write # This is required for requesting the JWT
+      contents: read  # This is required for actions/checkout
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          role-to-assume: ${{ vars.PIPELINE_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | \
+          docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY }}
+
+      - name: Build and push Docker image
+        run: |
+          cd ./forge # Navigate to context
+          echo "Building Docker image..."
+          docker build --target server -f .docker/Dockerfile -t ${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPO }}:latest .
+          echo "Pushing Docker image to Amazon ECR..."
+          docker push ${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPO }}:latest
+
+      - name: Complete Build Process
+        run: echo "🚀 Success"

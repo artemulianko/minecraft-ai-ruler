@@ -1,0 +1,43 @@
+name: Deploy server
+run-name: Deploy latest version of server
+on:
+  workflow_dispatch:
+    inputs:
+      ecs_cluster_arn:
+        description: 'ECS Cluster ARN'
+        required: true
+        type: string
+      ecs_service:
+        description: 'ECS Service ARN'
+        required: true
+        type: string
+jobs:
+  deploy:
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          role-to-assume: ${{ vars.PIPELINE_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Get current task definition
+        id: get-task-def
+        run: |
+          TASK_DEF_ARN=$(aws ecs describe-services \
+            --cluster ${{ github.event.inputs.ecs_cluster }} \
+            --services ${{ github.event.inputs.ecs_service }} \
+            --query 'services[0].taskDefinition' \
+            --output text)
+          echo "task_def_arn=${TASK_DEF_ARN}" >> $GITHUB_OUTPUT
+
+      - name: Update ECS service with latest image
+        run: |
+          aws ecs update-service \
+            --cluster ${{ github.event.inputs.ecs_cluster }} \
+            --services ${{ github.event.inputs.ecs_service }} \
+            --force-new-deployment \
+            --query 'service.taskDefinition'

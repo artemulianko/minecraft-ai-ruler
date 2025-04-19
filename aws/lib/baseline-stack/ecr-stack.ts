@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import {Construct} from "constructs";
 
-export default class EcrStack extends cdk.Stack {
+export default class EcrStack extends cdk.NestedStack {
     public readonly repository: ecr.IRepository;
 
     constructor(scope: Construct) {
@@ -13,13 +13,12 @@ export default class EcrStack extends cdk.Stack {
             removalPolicy: cdk.RemovalPolicy.DESTROY,
             lifecycleRules: [
                 {
-                    description: 'Retain only the last 10 images',
-                    maxImageCount: 10
+                    description: 'Retain only the last 2 images',
+                    maxImageCount: 2
                 }
             ]
         });
 
-        // Output the repository URI
         new cdk.CfnOutput(this, 'EcrRepositoryUri', {
             value: this.repository.repositoryUri,
             description: 'The URI of the ECR repository',
