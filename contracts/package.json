@@ -1,0 +1,11 @@
+{
+  "name": "contracts",
+  "scripts": {
+    "generate:all": "bun run generate:modTypes & bun run generate:agentTypes",
+    "generate:modTypes": "bun run scripts/generateModJavaTypes.ts",
+    "generate:agentTypes": "bun run scripts/generateAgentTypes.ts"
+  },
+  "dependencies": {
+    "@asyncapi/modelina": "^4.4.2"
+  }
+}

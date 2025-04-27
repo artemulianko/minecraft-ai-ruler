@@ -1,0 +1,17 @@
+{
+  "name": "agents",
+  "version": "1.0.0",
+  "scripts": {
+    "start:moderator": "bun run src/moderator.ts",
+    "generate:agentTypes": "bun run ../contracts/scripts/generateAgentTypes.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "kafkajs": "^2.2.4",
+    "openai": "^4.96.0",
+    "protobufjs": "^7.5.0"
+  }
+}
